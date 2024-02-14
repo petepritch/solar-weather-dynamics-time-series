@@ -1,9 +1,22 @@
 ---
 title: "Midterm Project Draft"
-output: html_document
-date: "2024-02-14"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: flatly
+    toc: yes
+    toc_float:
+      collapsed: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# Introduction 
+
+# Data
+
+# Conclusion
+
+# References
