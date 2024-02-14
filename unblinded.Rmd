@@ -1,0 +1,12 @@
+---
+title: "Midterm Project"
+author: "Pete Pritchard, Gabriel Vieria,  and Sizhuang He"
+date: "2024-02-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
