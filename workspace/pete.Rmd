@@ -1,29 +1,91 @@
 ---
 title: "pete"
-output: html_document
 date: "2024-02-15"
+bibliography: references.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/cell-numeric.csl
+output: 
+  html_document:
+    theme: flatly
+    toc: yes
+    toc_float:
+      collapsed: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning=FALSE)
 ```
 
-## R Markdown
+![Image captured by the Daniel K. Inouye Solar Telescope.](C:\Users\petep\OneDrive\Documents\School\WI24\531\STATS-531-Midterm-Project\assets\sunspotpic.jpeg)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Check out NASA's sunspot live feed [here.](https://soho.nascom.nasa.gov/sunspots/) 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Introduction
 
-```{r cars}
-summary(cars)
+Sunspots are massive, dark regions of strong magnetic fields on the surface of the sun. These regions have the potential to trigger explosive phenomena like solar flares and coronal mass ejections.
+
+It's crucial for scientists to model sunspot behavior as solar activity can have significant effects on Earth's space environment, GPS navigation, satellite communications, power grids, and so much more. 
+
+```{r load_packages, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(forecast)
 ```
 
-## Including Plots
+## Data
 
-You can also embed plots, for example:
+Our data includes 2820 observations of monthly mean relative sunspot numbers (count) from 1749 to 1983. Collected at Swiss Federal Observatory, Zurich until 1960, then Tokyo Astronomical Observatory. As one does in time series modeling, we start off by simply plotting the data.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r data}
+# Load data
+data("sunspots")
+
+# Create timestamps
+start_date <- as.Date("1749-01-01") # Start date 
+end_date <- as.Date("1983-12-01")   # End date 
+timestamps <- seq(start_date, end_date, by = "month")
+
+# Create dataframe
+df <- data.frame(
+  month = timestamps,
+  spots = sunspots
+)
+
+# Print first few rows of the dataframe
+head(df)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r initial_plot}
+plot.1 <- ggplot(data = df, aes(x = month, y = spots)) + 
+  
+  geom_line()  +
+  
+  labs(title = "Monthly mean relatice sunpot numbers", 
+       subtitle = "Swiss Federal Observatory",
+       x = "Year",
+       y = "Mean sunspot numbers")  
+
+plot.1
+```
+
+## What do we see?
+
+Don't notice any sort of trend over the period of 200+ years. However, the sharp peaks seem to be regular indicating seasonality.
+
+```{r}
+autoplot(decompose(sunspots))
+```
+
+We cannot get much out of the seasonal component, it also has the highest variation. The remainder component in the bottom panel is what is left over when the seasonal and trend components have been subtracted from the data.
+
+The grey bars to the right of each panel show the relative scales of the components. Each grey bar represents the same length but because the plots are on different scales, the bars vary in size. 
+
+## SARIMA 
+
+## Spectral Analysis
+
+## Wavelet Coherence
+
+## Conclusion
+
+## Future Extensions
