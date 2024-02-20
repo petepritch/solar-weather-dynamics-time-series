@@ -1,7 +1,7 @@
 ---
 title: "pete"
 date: "2024-02-15"
-bibliography: references.bib
+bibliography: pete.bib
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/cell-numeric.csl
 output: 
   html_document:
@@ -16,61 +16,159 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning=FALSE)
 ```
 
-![Image captured by the Daniel K. Inouye Solar Telescope.](C:\Users\petep\OneDrive\Documents\School\WI24\531\STATS-531-Midterm-Project\assets\sunspotpic.jpeg)
+![Image captured by the Daniel K. Inouye Solar Telescope.](/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/assets/sunspotpic.jpeg)
+
+--------
 
 Check out NASA's sunspot live feed [here.](https://soho.nascom.nasa.gov/sunspots/) 
 
+--------
+
 ## Introduction
 
-Sunspots are massive, dark regions of strong magnetic fields on the surface of the sun. These regions have the potential to trigger explosive phenomena like solar flares and coronal mass ejections.
+Sunspots are massive, dark regions of strong magnetic fields on the surface of the sun. They are the result of extreme magnetic flux pushing out from within the Sun's interior [@SWPC]. This causes these areas to cool and become denser and darker than the surrounding photosphere. These regions have the potential to trigger explosive phenomena like solar flares and coronal mass ejections.
 
 It's crucial for scientists to model sunspot behavior as solar activity can have significant effects on Earth's space environment, GPS navigation, satellite communications, power grids, and so much more. 
+
+--------
+
+### Literature
+
+It's evident that a robust understanding of space weather is of extreme importance given our world's increasing reliance on modern technologies. Moreover, space is a fascinating topic. That said, there is no shortage of scientific research on applying different statistical modeling techniques to this particular data set. Sunspots and related solar activities have been studies using various techniques including, multifractal analysis, correlation analysis, wavelet transforms, deep neural networks, autoregression, and much more [@hu].
 
 ```{r load_packages, echo=FALSE}
 library(dplyr)
 library(ggplot2)
+library(knitr)
+library(zoo)
 library(forecast)
 ```
 
+--------
+
 ## Data
 
-Our data includes 2820 observations of monthly mean relative sunspot numbers (count) from 1749 to 1983. Collected at Swiss Federal Observatory, Zurich until 1960, then Tokyo Astronomical Observatory. As one does in time series modeling, we start off by simply plotting the data.
+Our data includes 3300 (as of February 15, 2024) observations of monthly mean relative sunspot numbers (count) from 1749 to present. Collected at Swiss Federal Observatory, Zurich until 1960, then Tokyo Astronomical Observatory. A description of the columns provided by Solar Influences Data Analysis Center is given: 
 
-```{r data}
-# Load data
-data("sunspots")
+- Column 1-2: Gregorian Calender Date
+- Column 3: Date in fraction of year for the middle of the corresponding month
+- Column 4: Monthly mean total sunspot number
+- Column 5: Monthly mean standard deviation of the input sunspot numbers from individual stations.
+- Column 6: Number of observations used to compute the monthly mean total sunspot number.
+- Column 7: Definitive/provisional marker. A blank indicates that the value is definitive. A '*' symbol indicates that the monthly value is still provisional and is subject to a possible revision (Usually the last 3 to 6 months).
 
+This report will primarily focus on uni-variate analysis, and thus we will only use column 4, monthly mean total sunspot number. 
+
+```{r table, echo=FALSE, results="asis"}
+data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+                 sep = ";")
+
+data <- data %>%
+  rename(
+    Year = X1749, 
+    Month = X01,
+    date.franction = X1749.042, 
+    monthly.mean = X96.7,
+    monthly.sd = X.1.0,
+    monthly.obs = X.1,
+    prov.marker = X1
+  )
+
+knitr::kable(data[1:5,], caption = "Monthly mean sunspot data")
+```
+
+--------
+
+## EDA
+
+As one does in time series modeling, we start off by simply plotting the data.
+
+```{r format_data}
 # Create timestamps
-start_date <- as.Date("1749-01-01") # Start date 
-end_date <- as.Date("1983-12-01")   # End date 
+start_date <- as.Date("1749-01-01") # Start date
+end_date <- as.Date(Sys.Date())   # End date
 timestamps <- seq(start_date, end_date, by = "month")
 
-# Create dataframe
-df <- data.frame(
-  month = timestamps,
-  spots = sunspots
-)
-
-# Print first few rows of the dataframe
-head(df)
+# Create data zoo
+sun.data <- zoo(data$monthly.mean, timestamps)
 ```
 
 ```{r initial_plot}
-plot.1 <- ggplot(data = df, aes(x = month, y = spots)) + 
-  
-  geom_line()  +
-  
-  labs(title = "Monthly mean relatice sunpot numbers", 
-       subtitle = "Swiss Federal Observatory",
-       x = "Year",
-       y = "Mean sunspot numbers")  
-
-plot.1
+plot.zoo(sun.data, xlab = "Year", ylab = "Mean Sunspots",
+         col = "mediumblue", lwd = 1)
+title("Monthly Mean Sunspot Count 1749-2024")
 ```
 
-## What do we see?
+From the plot, there is no obvious trend and the mean looks to be roughly 100. However, the sharp peaks seem to be regular indicating seasonality. We'll zoom into the data to have a better view of the seasonality. 
 
-Don't notice any sort of trend over the period of 200+ years. However, the sharp peaks seem to be regular indicating seasonality.
+```{r zoomed_plot}
+# Slice the first 100 observations of the data
+zoomed_data <- sun.data[1:500]
+
+# Plot the sliced data
+plot.zoo(zoomed_data, xlab = "Year", ylab = "Mean Sunspots",
+         col = "mediumblue", lwd = 1)
+title("Monthly Mean Sunspot Count (First 500 Observations)")
+abline(v = index(zoomed_data)[80], col = "red", lty = 2)
+abline(v = index(zoomed_data)[208], col = "red", lty = 2)
+abline(v = index(zoomed_data)[320], col = "red", lty = 2)
+abline(v = index(zoomed_data)[425], col = "red", lty = 2)
+```
+
+Figure 2 paints a pretty clear picture that aligns with the general concurrences of an approximate 11 year solar cycle. The red dotted lines indicate the end/start of a sinusoidal wave. 
+
+### AR() Models
+```{r}
+ar_table <- function(data, P){
+  table <- matrix(NA, (P+1), 1)
+  for(p in 0:P){
+    table[p+1, 1] <- arima(data, order=c(p,0,0))$aic
+  }
+  dimnames(table) <- list(paste("AR", 0:P, sep=""))
+  table
+}
+
+sun.aic.table <- ar_table(coredata(sun.data), 9)
+knitr::kable(sun.aic.table, digits = 2, caption = "AIC Table")
+```
+
+$$Y_t = \phi_1 Y_{n-1} +\phi_2 Y_{n-2} + \dots + \phi_p Y_{n-p} + $$
+
+```{r aic_loop}
+aic_table <- function(data,P,Q){
+  table <- matrix(NA,(P+1),(Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1,q+1] <- arima(data, xreg = index, order=c(p,0,q))$aic
+    }
+  }
+  dimnames(table) <- list(paste("AR",0:P, sep=""), paste("MA",0:Q,sep=""))
+  table
+}
+
+sun.aic.table <- aic_table(coredata(sun.data), 5, 6)
+require(knitr)
+kable(sun.aic.table, digits=2, caption = "AIC Table")
+```
+
+```{r}
+aic_table <- function(data, P, Q){
+  table <- matrix(NA, (P+1), (Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1, q+1] <- arima(data, order = c(p, 0, q), xreg = as.matrix(index(data)))[["aic"]]
+    }
+  }
+  dimnames(table) <- list(paste("AR", 0:P, sep=""), paste("MA", 0:Q, sep=""))
+  table
+}
+
+sun.aic.table <- aic_table(coredata(sun.data), 5, 6)
+require(knitr)
+kable(sun.aic.table, digits = 2, caption = "AIC Table")
+```
+
+
 
 ```{r}
 autoplot(decompose(sunspots))
@@ -80,12 +178,27 @@ We cannot get much out of the seasonal component, it also has the highest variat
 
 The grey bars to the right of each panel show the relative scales of the components. Each grey bar represents the same length but because the plots are on different scales, the bars vary in size. 
 
+--------
+
 ## SARIMA 
+
+A general $SARMA(p,q)\times(P,Q)_{12}$ model for monthly data is
+$$$$
+
+--------
 
 ## Spectral Analysis
 
+--------
+
 ## Wavelet Coherence
+
+--------
 
 ## Conclusion
 
+--------
+
 ## Future Extensions
+
+There are numerous avenues one could take exploring this data set. It would be interesting to see how more modern machine/deep learning methods perform in comparison to classical time series approaches. The 11-year solar cycle is indeed glaring, however perhaps it's so bright that it's caused researchers to overlook hidden seasonal trends? 
