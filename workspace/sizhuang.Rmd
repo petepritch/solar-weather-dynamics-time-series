@@ -8,22 +8,71 @@ date: "2024-02-15"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r load_packages, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(forecast)
 ```
 
-## Including Plots
+Let's firt load the data.
 
-You can also embed plots, for example:
+```{r load_data, echo=FALSE}
+# Load data
+data("sunspots")
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# Create timestamps
+start_date <- as.Date("1749-01-01") # Start date 
+end_date <- as.Date("1983-12-01")   # End date of the dataset
+timestamps <- seq(start_date, end_date, by = "month")
+
+# Create dataframe
+df <- data.frame(
+  month = timestamps,
+  spots = sunspots
+)
+
+# Print first few rows of the dataframe
+head(df)
 ```
+To get a sense of the data, we plot the number of sunspots over time.
+```{r initial_plot}
+plot.1 <- ggplot(data = df, aes(x = month, y = spots)) + 
+  
+  geom_line()  +
+  
+  labs(title = "Monthly mean relatice sunpot numbers", 
+       subtitle = "Swiss Federal Observatory",
+       x = "Year",
+       y = "Mean sunspot numbers")  
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+plot.1
+```
+The data looks periodic. Over the course of 234 years, we observe 22 peaks, approximately equally spaced. This hints us there may be a period of 10.6 years. To better understand any periodical behavior in the data, we analyze the data in the frequency domain. We plot the  periodogram on the unsmoothed raw data. We compute the dominant frequency, which is 0.0917 cycles per year, that is 10.909 years per cycle. This is close to our first observation. However, the unsmoothed periodogram doesn't provide us much visual clue on the data.
+```{r}
+unsmoothed_spectrum<-spectrum(df$spots, main = "Unsmoothed periodogram",
+  xlab="frequency (cycles per year")
+unsmoothed_freq <- unsmoothed_spectrum$freq[which.max(unsmoothed_spectrum$spec)]
+unsmoothed_freq
+1/unsmoothed_freq
+```
+Let's plot the smoothed periodogram using two rectangle windows of width 15 years to smooth the data. From the plot, we find the dominant frequency is 0.0917 cycles per year and equivalently 10.90 years per cycle.
+
+
+```{r}
+smoothed_spectrum <- spectrum(df$spots, spans=c(15, 15), main = "Smoothed periodogram", xlab="Frequency (per month)")
+freq <- smoothed_spectrum$freq[which.max(smoothed_spectrum$spec)]
+freq
+1/freq
+```
+Now, we fit an AR(p) model with the parameter p selected by AIC to estimate the spectrum. The AR model have a dominant frequency of 0.0841 cycles per year, or 11.88 years per cycle.
+
+```{r}
+ar_spectrum <- spectrum(df$spots, method = "ar",
+                         main = "Spectral Density by an AR Model, selected by AIC",
+                         xlab = "Frequency (cycles per year)")
+ar_freq <- ar_spectrum$freq[which.max(ar_spectrum $spec)]
+ar_freq
+1/ar_freq
+```
+All three models give a period of around 11 years, which confirm our observation and also coincide with our prior knowledge of sunspot cycles.
