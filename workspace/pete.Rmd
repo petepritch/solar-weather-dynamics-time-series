@@ -116,8 +116,8 @@ From the plot in figure 1, there is no obvious trend. However, the sharp peaks s
 ```{r}
 #plotting ACF and PACF
 par(mfrow=c(1,2))
-acf(coredata(sun.data), lag.max = 100, main = "ACF of Monthly Sunspots short period")
-pacf(coredata(sun.data), lag.max = 100, main = "PACF of Monthly Sunspots short period")
+acf(coredata(sun.data), lag.max = 150, main = "ACF of Monthly Sunspots short period")
+pacf(coredata(sun.data), lag.max = 150, main = "PACF of Monthly Sunspots short period")
 ```
 
 150 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting auto regression. There's no discernible pattern in the PACF plot, but there are noticeably significant lags at 2 and 18. 
