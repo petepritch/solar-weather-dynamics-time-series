@@ -11,12 +11,17 @@ output:
       collapsed: true
 ---
 
+\newcommand\prob{\mathbb{P}}
+\newcommand\E{\mathbb{E}}
+\newcommand\var{\mathrm{Var}}
+\newcommand\cov{\mathrm{Cov}}
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning=FALSE)
 ```
 
-![Image captured by the Daniel K. Inouye Solar Telescope.](/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/assets/sunspotpic.jpeg)
+![Image captured by the Daniel K. Inouye Solar Telescope.](C:\Users\petep\OneDrive\Documents\School\WI24\531\STATS-531-Midterm-Project\assets\sunspotpic.jpeg)
 
 --------
 
@@ -26,9 +31,7 @@ Check out NASA's sunspot live feed [here.](https://soho.nascom.nasa.gov/sunspots
 
 ## Introduction
 
-Sunspots are massive, dark regions of strong magnetic fields on the surface of the sun. They are the result of extreme magnetic flux pushing out from within the Sun's interior [@SWPC]. This causes these areas to cool and become denser and darker than the surrounding photosphere. These regions have the potential to trigger explosive phenomena like solar flares and coronal mass ejections.
-
-It's crucial for scientists to model sunspot behavior as solar activity can have significant effects on Earth's space environment, GPS navigation, satellite communications, power grids, and so much more. 
+Sunspots are massive, dark regions of strong magnetic fields on the surface of the sun. They are the result of extreme magnetic flux pushing out from within the Sun's interior [@SWPC]. This causes these areas to cool and become denser and darker than the surrounding photosphere. These regions have the potential to trigger explosive phenomena like solar flares and coronal mass ejections. It's crucial for scientists to model sunspot behavior as solar activity can have significant effects on Earth's space environment, GPS navigation, satellite communications, power grids, and so much more. 
 
 --------
 
@@ -36,7 +39,7 @@ It's crucial for scientists to model sunspot behavior as solar activity can have
 
 It's evident that a robust understanding of space weather is of extreme importance given our world's increasing reliance on modern technologies. Moreover, space is a fascinating topic. That said, there is no shortage of scientific research on applying different statistical modeling techniques to this particular data set. Sunspots and related solar activities have been studied using various techniques including, multifractal analysis, correlation analysis, wavelet transforms, deep neural networks, autoregression, and much more [@hu]. 
 
-Despite the varying modeling techniques, there is one phenomenon that all researchers agree on - the sun exhibits an approximate 11 year solar cycle. The solar cycle is indicated by the frequency and intensity of visible sunspots, and have proven to be quite difficult to predict [@daisy].
+Despite the varying modeling techniques, there is one phenomenon that all researchers agree on - the sun exhibits an approximate 11 year solar cycle. The solar cycle is indicated by the frequency and intensity of visible sunspots, and have proven to be quite difficult to predict [@daisy]. In this study, we will employ various classical time series methods in attempt to capture the implicit behavior in sunspot activity. 
 
 
 
@@ -52,7 +55,7 @@ library(forecast)
 
 ## Data
 
-Our data includes 3300 (as of February 15, 2024) observations of monthly mean relative sunspot numbers (count) from 1749 to present. The data was collected at Swiss Federal Observatory, Zurich until 1960, then Tokyo Astronomical Observatory. A description of the data set provided by Solar Influences Data Analysis Center is given below: 
+Our data includes 3300 (as of February 15, 2024) observations of monthly mean relative sunspot numbers (count) from 1749 to present. The data was collected by the Swiss Federal Observatory, Zurich until 1960, then the Tokyo Astronomical Observatory. The data is readily available at the Solar Influences Data Analysis Center's (SIDC) [website](https://www.sidc.be/SILSO/datafiles). A description of the data set provided by the SIDC is given below: 
 
 - Column 1-2: Gregorian Calender Date
 - Column 3: Date in fraction of year for the middle of the corresponding month
@@ -61,11 +64,16 @@ Our data includes 3300 (as of February 15, 2024) observations of monthly mean re
 - Column 6: Number of observations used to compute the monthly mean total sunspot number.
 - Column 7: Definitive/provisional marker. A blank indicates that the value is definitive. A '*' symbol indicates that the monthly value is still provisional and is subject to a possible revision (Usually the last 3 to 6 months).
 
-This report will primarily focus on uni-variate analysis, and thus we will only use column 4, monthly mean total sunspot number. 
+This report will focus on uni-variate analysis, and thus we will only use column 4, monthly mean total sunspot number. 
 
 ```{r table, echo=FALSE, results="asis"}
-data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
-                 sep = ";")
+# Comment out the line of code for the machine you are not on...
+
+#data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+#                 sep = ";") # Mac machine
+
+data <- read.csv("C:/Users/petep/OneDrive/Documents/School/WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+                 sep = ";") # Windows machine
 
 data <- data %>%
   rename(
@@ -97,79 +105,133 @@ timestamps <- seq(start_date, end_date, by = "month")
 sun.data <- zoo(data$monthly.mean, timestamps)
 ```
 
-```{r initial_plot}
+```{r initial_plot, fig.cap=""}
 plot.zoo(sun.data, xlab = "Year", ylab = "Mean Sunspots",
          col = "mediumblue", lwd = 1)
 title("Monthly Mean Sunspot Count 1749-2024")
 ```
 
-From the plot, there is no obvious trend and the mean looks to be roughly 100. However, the sharp peaks seem to be regular indicating seasonality. We'll zoom into the data to have a better view of the seasonality. 
+From the plot in figure 1, there is no obvious trend. However, the sharp peaks seem to be regular indicating there might be some form seasonality. It's difficult to tell if the data is stationary. For a time series to be stationary, it must possess properties that do not depend on the time at which the series is observed (cite). So,a series with trends or seasonality are not stationary, but a series with cyclic behavior (but no trend or seasonality) is stationary (cite). We'll zoom into the data to get a better idea of what's going on. 
 
-```{r zoomed_plot}
-# Slice the first 100 observations of the data
-zoomed_data <- sun.data[1:500]
+```{r}
+#plotting ACF and PACF
+par(mfrow=c(1,2))
+acf(coredata(sun.data), lag.max = 100, main = "ACF of Monthly Sunspots short period")
+pacf(coredata(sun.data), lag.max = 100, main = "PACF of Monthly Sunspots short period")
+```
+
+150 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting auto regression. There's no discernible pattern in the PACF plot, but there are noticeably significant lags at 2 and 18. 
+
+```{r zoomed_plot_first5001}
+# # Slice the first 100 observations of the data
+# zoomed_data <- sun.data[1:500]
+# 
+# # Plot the sliced data
+# plot.zoo(zoomed_data, xlab = "Year", ylab = "Mean Sunspots",
+#          col = "mediumblue", lwd = 1)
+# title("Monthly Mean Sunspot Count (First 500 Observations)")
+# abline(v = index(zoomed_data)[80], col = "red", lty = 2)
+# abline(v = index(zoomed_data)[208], col = "red", lty = 2)
+# abline(v = index(zoomed_data)[320], col = "red", lty = 2)
+# abline(v = index(zoomed_data)[425], col = "red", lty = 2)
+```
+
+
+```{r zoomed_plot_first500}
+# Slice the last 200 observations of the data
+zoomed_data <- tail(sun.data, 200)
 
 # Plot the sliced data
 plot.zoo(zoomed_data, xlab = "Year", ylab = "Mean Sunspots",
          col = "mediumblue", lwd = 1)
-title("Monthly Mean Sunspot Count (First 500 Observations)")
-abline(v = index(zoomed_data)[80], col = "red", lty = 2)
-abline(v = index(zoomed_data)[208], col = "red", lty = 2)
-abline(v = index(zoomed_data)[320], col = "red", lty = 2)
-abline(v = index(zoomed_data)[425], col = "red", lty = 2)
+title("Monthly Mean Sunspot Count (Short Period)")
+# abline(v = index(zoomed_data)[80], col = "red", lty = 2)
+# abline(v = index(zoomed_data)[208], col = "red", lty = 2)
+# abline(v = index(zoomed_data)[320], col = "red", lty = 2)
+# abline(v = index(zoomed_data)[425], col = "red", lty = 2)
 ```
 
-Figure 2 paints a pretty clear picture that aligns with the general concurrences of an approximate 11 year solar cycle. The red dotted lines indicate the end/start of a sinusoidal wave. 
+Over short term periods, it may appear that there are linear trends. However, when considering the full data, it becomes apparent that these are elements of a much broader cyclical trend. There are many successive points indicating autoregression, however the strength of the relationship changes over time with a stronger relationship occurring at the low point of the cycle. It's obvious that the variance changes. Furthermore, figure 2 highlights the general concurrences of an approximate 11 year solar cycle. 
 
-### AR() Models
 ```{r}
-ar_table <- function(data, P){
-  table <- matrix(NA, (P+1), 1)
-  for(p in 0:P){
-    table[p+1, 1] <- arima(data, order=c(p,0,0))$aic
-  }
-  dimnames(table) <- list(paste("AR", 0:P, sep=""))
-  table
-}
-
-sun.aic.table <- ar_table(coredata(sun.data), 9)
-knitr::kable(sun.aic.table, digits = 2, caption = "AIC Table")
+#plotting ACF and PACF
+par(mfrow=c(1,2))
+acf(coredata(zoomed_data), lag.max = 50, main = "ACF of Monthly Sunspots short period")
+pacf(coredata(zoomed_data), lag.max = 50, main = "PACF of Monthly Sunspots short period")
 ```
+
+```{r}
+annual_short <- diff(coredata(zoomed_data))
+
+# Plot the sliced differenced data
+plot.zoo(annual_short, xlab = "Year", ylab = "Mean Sunspots",
+         col = "mediumblue", lwd = 1)
+title("Differenced Monthly Mean Sunspot Count (Short Period)")
+```
+
+After applying seasonal differenceing, the changes in variance becomes very apparent in the residual plot. 
+
+```{r}
+#plotting ACF and PACF
+par(mfrow=c(1,2))
+acf(coredata(annual_short), lag.max = 50, main = "ACF of Monthly Sunspots short period")
+pacf(coredata(annual_short), lag.max = 50, main = "PACF of Monthly Sunspots short period")
+```
+
 
 $$Y_t = \phi_1 Y_{n-1} +\phi_2 Y_{n-2} + \dots + \phi_p Y_{n-p} + $$
 
-```{r aic_loop}
-aic_table <- function(data,P,Q){
-  table <- matrix(NA,(P+1),(Q+1))
-  for(p in 0:P) {
-    for(q in 0:Q) {
-      table[p+1,q+1] <- arima(data, xreg = index, order=c(p,0,q))$aic
-    }
-  }
-  dimnames(table) <- list(paste("AR",0:P, sep=""), paste("MA",0:Q,sep=""))
-  table
-}
+--------
 
-sun.aic.table <- aic_table(coredata(sun.data), 5, 6)
-require(knitr)
-kable(sun.aic.table, digits=2, caption = "AIC Table")
-```
+## SARIMA 
+
+A seasonal ARIMA model (SARAMA) is construed by including additional season terms in a ARIMA models. It is defined as follows:
+$$SARMA(p,q)\times(P,Q)_m$$
+Where *m* = number of observations per year. For example, a general $SARMA(p,q)\times(P,Q)_{12}$ model for monthly data is
+$$\phi(B)\Phi(B^{12})(Y_n-\mu)=\psi(B)\Psi(B^{12})\epsilon_n,$$
+where $\epsilon_n$ is a white noise process and
+$$
+\begin{aligned}
+ \mu = \exp \\
+ \phi(x) = 1-\phi_1x-\dots-\phi_px^p, \\
+ \psi(x) = 1+\psi_1x+\dots+\psi_qx^q, \\
+ \Phi(x) = 1-\Phi_1x-\dots-\Phi_Px^P, \\
+ \Psi(x) = 1+\Psi_1x+\dots+\Psi_Qx^Q. \\
+\end{aligned}
+$$
+
+The seasonal part of an AR or MA model can be discovered through the seasonal lags of the PACF and ACF. 
 
 ```{r}
-aic_table <- function(data, P, Q){
-  table <- matrix(NA, (P+1), (Q+1))
-  for(p in 0:P) {
-    for(q in 0:Q) {
-      table[p+1, q+1] <- arima(data, order = c(p, 0, q), xreg = as.matrix(index(data)))[["aic"]]
-    }
-  }
-  dimnames(table) <- list(paste("AR", 0:P, sep=""), paste("MA", 0:Q, sep=""))
-  table
-}
+#plotting ACF and PACF
+par(mfrow=c(1,2))
+forecast::Acf(coredata(sun.data), lag.max = 100, main = "ACF of Monthly Sunspots")
+forecast::Acf(coredata(sun.data), type = "partial", lag.max = 100, main = "PACF of Monthly Sunspots")
+```
 
-sun.aic.table <- aic_table(coredata(sun.data), 5, 6)
-require(knitr)
-kable(sun.aic.table, digits = 2, caption = "AIC Table")
+--------
+
+## Spectral Analysis
+
+```{r sdf, fig.cap="Spectral estimation using parametric and non-parametric methods."}
+sunspot_ar <- spec.ar(coredata(zoomed_data), plot = FALSE) # parametric estimation based on 
+                                              # AR model
+sunspot_np <- spectrum(coredata(zoomed_data  ), spans = c(5, 5), plot = FALSE) # nonparametric
+plot(sunspot_ar$freq, sunspot_ar$spec, type = "l", log = "y", 
+     ylab = "Spectral Power", xlab = "Frequency (cycles per observation)", 
+     bty = "l", col = 2)
+lines(sunspot_np$freq, sunspot_np$spec, lty = 2, col = 4)
+legend("topright", c("parametric", "nonparametric"), lty = 1:2, bty = "n")
+```
+```{r}
+domain_freq_ar <- sunspot_ar$freq[which.max(sunspot_ar$freq)]
+domain_freq_np <- sunspot_np$freq[which.max(sunspot_np$freq)]
+
+period_ar <- 1/(domain_freq_ar*12)
+period_np <- 1/(domain_freq_np*12)
+
+print(period_ar)
+print(period_np)
 ```
 
 
@@ -184,14 +246,15 @@ The grey bars to the right of each panel show the relative scales of the compone
 
 --------
 
-## SARIMA 
+## Lowess
 
-A general $SARMA(p,q)\times(P,Q)_{12}$ model for monthly data is
-$$$$
+```{r}
+plot(coredata(sun.data), xlab = "Year", ylab = "Mean Sunspots",
+         col = "grey", lwd = 1)
+lines(lowess(coredata(sun.data), f = 0.001), lwd = 2, col = 4)
+lines(lowess(coredata(sun.data)), lty = 2, lwd =2, col = 2)
+```
 
---------
-
-## Spectral Analysis
 
 --------
 
@@ -199,7 +262,7 @@ $$$$
 
 --------
 
-## Conclusion
+## Conclusion 
 
 --------
 
