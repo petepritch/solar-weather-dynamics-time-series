@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning=FALSE)
 ```
 
-![Image captured by the Daniel K. Inouye Solar Telescope.](C:\Users\petep\OneDrive\Documents\School\WI24\531\STATS-531-Midterm-Project\assets\sunspotpic.jpeg)
+![Image captured by the Daniel K. Inouye Solar Telescope.](/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/assets/sunspotpic.jpeg)
 
 --------
 
@@ -43,7 +43,7 @@ Despite the varying modeling techniques, there is one phenomenon that all resear
 
 
 
-```{r load_packages, echo=FALSE}
+```{r load_packages, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
 library(dplyr)
 library(ggplot2)
 library(knitr)
@@ -69,11 +69,11 @@ This report will focus on uni-variate analysis, and thus we will only use column
 ```{r table, echo=FALSE, results="asis"}
 # Comment out the line of code for the machine you are not on...
 
-#data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
-#                 sep = ";") # Mac machine
+data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+                 sep = ";") # Mac machine
 
-data <- read.csv("C:/Users/petep/OneDrive/Documents/School/WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
-                 sep = ";") # Windows machine
+#data <- read.csv("C:/Users/petep/OneDrive/Documents/School/WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+#                 sep = ";") # Windows machine
 
 data <- data %>%
   rename(
@@ -95,7 +95,7 @@ knitr::kable(data[1:5,], caption = "Monthly mean sunspot data")
 
 As one does in time series modeling, we start off by simply plotting the data.
 
-```{r format_data}
+```{r format_data, echo=FALSE}
 # Create timestamps
 start_date <- as.Date("1749-01-01") # Start date
 end_date <- as.Date(Sys.Date())   # End date
@@ -105,7 +105,7 @@ timestamps <- seq(start_date, end_date, by = "month")
 sun.data <- zoo(data$monthly.mean, timestamps)
 ```
 
-```{r initial_plot, fig.cap=""}
+```{r initial_plot, fig.cap="Time series plot of all mean sunspot data from sample", echo=FALSE}
 plot.zoo(sun.data, xlab = "Year", ylab = "Mean Sunspots",
          col = "mediumblue", lwd = 1)
 title("Monthly Mean Sunspot Count 1749-2024")
@@ -113,11 +113,16 @@ title("Monthly Mean Sunspot Count 1749-2024")
 
 From the plot in figure 1, there is no obvious trend. However, the sharp peaks seem to be regular indicating there might be some form seasonality. It's difficult to tell if the data is stationary. For a time series to be stationary, it must possess properties that do not depend on the time at which the series is observed (cite). So,a series with trends or seasonality are not stationary, but a series with cyclic behavior (but no trend or seasonality) is stationary (cite). We'll zoom into the data to get a better idea of what's going on. 
 
+
+Plotting the sample autocorrelation will give us some insight. The sample correlation, also known as the ACF, if defined by:
+
+$$\rho_h=\rho(y_{1:N}^*)=\frac{\gamma_h}{\gamma_0}$$
+
 ```{r}
 #plotting ACF and PACF
 par(mfrow=c(1,2))
-acf(coredata(sun.data), lag.max = 150, main = "ACF of Monthly Sunspots short period")
-pacf(coredata(sun.data), lag.max = 150, main = "PACF of Monthly Sunspots short period")
+acf(coredata(sun.data), lag.max = 500, main = "ACF of Monthly Sunspots ")
+pacf(coredata(sun.data), lag.max = 500, main = "PACF of Monthly Sunspots")
 ```
 
 150 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting auto regression. There's no discernible pattern in the PACF plot, but there are noticeably significant lags at 2 and 18. 
@@ -137,7 +142,7 @@ pacf(coredata(sun.data), lag.max = 150, main = "PACF of Monthly Sunspots short p
 ```
 
 
-```{r zoomed_plot_first500}
+```{r zoomed_plot_first500, fig.cap="Last 200 observations of sample data"}
 # Slice the last 200 observations of the data
 zoomed_data <- tail(sun.data, 200)
 
@@ -145,13 +150,11 @@ zoomed_data <- tail(sun.data, 200)
 plot.zoo(zoomed_data, xlab = "Year", ylab = "Mean Sunspots",
          col = "mediumblue", lwd = 1)
 title("Monthly Mean Sunspot Count (Short Period)")
-# abline(v = index(zoomed_data)[80], col = "red", lty = 2)
-# abline(v = index(zoomed_data)[208], col = "red", lty = 2)
-# abline(v = index(zoomed_data)[320], col = "red", lty = 2)
-# abline(v = index(zoomed_data)[425], col = "red", lty = 2)
+abline(v = index(zoomed_data)[20], col = "red", lty = 2)
+abline(v = index(zoomed_data)[150], col = "red", lty = 2)
 ```
 
-Over short term periods, it may appear that there are linear trends. However, when considering the full data, it becomes apparent that these are elements of a much broader cyclical trend. There are many successive points indicating autoregression, however the strength of the relationship changes over time with a stronger relationship occurring at the low point of the cycle. It's obvious that the variance changes. Furthermore, figure 2 highlights the general concurrences of an approximate 11 year solar cycle. 
+Over short term periods, it may appear that there are linear trends. However, looking back at the full data, it becomes apparent that these are elements of a much broader cyclical trend. There are many successive points indicating autoregression, however the strength of the relationship changes over time with a stronger relationship occurring at the low point of the cycle. This shows ut that it's obvious that the variance changes. Furthermore, figure 2 highlights the general concurrences of an approximate 11 year solar cycle. 
 
 ```{r}
 #plotting ACF and PACF
@@ -159,6 +162,17 @@ par(mfrow=c(1,2))
 acf(coredata(zoomed_data), lag.max = 50, main = "ACF of Monthly Sunspots short period")
 pacf(coredata(zoomed_data), lag.max = 50, main = "PACF of Monthly Sunspots short period")
 ```
+
+
+```{r}
+# Plotting short and long term ACF to compare
+par(mfrow=c(1,2))
+acf(coredata(sun.data), lag.max = 50, main = "Long Term")
+acf(coredata(zoomed_data), lag.max = 40, main = "Short Term")
+```
+
+
+The ACF plot on bother long and short terms sections of the data yield the same results, this implies weak stationarity, and confirms what we expected from the initial plots. This is kind of a bummer as stationarity leads to convenient statistical properties. 
 
 ```{r}
 annual_short <- diff(coredata(zoomed_data))
@@ -183,24 +197,6 @@ $$Y_t = \phi_1 Y_{n-1} +\phi_2 Y_{n-2} + \dots + \phi_p Y_{n-p} + $$
 
 --------
 
-## SARIMA 
-
-A seasonal ARIMA model (SARAMA) is construed by including additional season terms in a ARIMA models. It is defined as follows:
-$$SARMA(p,q)\times(P,Q)_m$$
-Where *m* = number of observations per year. For example, a general $SARMA(p,q)\times(P,Q)_{12}$ model for monthly data is
-$$\phi(B)\Phi(B^{12})(Y_n-\mu)=\psi(B)\Psi(B^{12})\epsilon_n,$$
-where $\epsilon_n$ is a white noise process and
-$$
-\begin{aligned}
- \mu = \exp \\
- \phi(x) = 1-\phi_1x-\dots-\phi_px^p, \\
- \psi(x) = 1+\psi_1x+\dots+\psi_qx^q, \\
- \Phi(x) = 1-\Phi_1x-\dots-\Phi_Px^P, \\
- \Psi(x) = 1+\Psi_1x+\dots+\Psi_Qx^Q. \\
-\end{aligned}
-$$
-
-The seasonal part of an AR or MA model can be discovered through the seasonal lags of the PACF and ACF. 
 
 ```{r}
 #plotting ACF and PACF
@@ -211,21 +207,28 @@ forecast::Acf(coredata(sun.data), type = "partial", lag.max = 100, main = "PACF 
 
 --------
 
-## Spectral Analysis
+### Spectral Analysis
+
+Given the cyclical nature of this time series, a formal investigation of the frequency domain is appropriate. A time series can be written as something called a **Fourier transform**, a sum of since and consine functions at varying frequencies (cite). The coefficients corresponding to the since and cosine at each frequency are called **frequency components**. Identifying which frequencies have large and small components can help select appropriate models and help us asses whether or not our models are doing an adequate job at describing our data.   
+
+We will use the spectral density function to identify the large frequency components of our data. The spectral density function is written as: 
+
+$$\lambda(\omega) = \sum_{h=-\infty}^{\infty}\gamma_h e^{-2\pi i\omega h}$$
 
 ```{r sdf, fig.cap="Spectral estimation using parametric and non-parametric methods."}
-sunspot_ar <- spec.ar(coredata(zoomed_data), plot = FALSE) # parametric estimation based on 
+sunspot_ar <- spec.ar(coredata(sun.data), plot = FALSE) # parametric estimation based on 
                                               # AR model
-sunspot_np <- spectrum(coredata(zoomed_data  ), spans = c(5, 5), plot = FALSE) # nonparametric
+sunspot_np <- spectrum(coredata(sun.data), spans = c(5, 5), plot = FALSE) # nonparametric
 plot(sunspot_ar$freq, sunspot_ar$spec, type = "l", log = "y", 
      ylab = "Spectral Power", xlab = "Frequency (cycles per observation)", 
      bty = "l", col = 2)
 lines(sunspot_np$freq, sunspot_np$spec, lty = 2, col = 4)
 legend("topright", c("parametric", "nonparametric"), lty = 1:2, bty = "n")
 ```
+
 ```{r}
-domain_freq_ar <- sunspot_ar$freq[which.max(sunspot_ar$freq)]
-domain_freq_np <- sunspot_np$freq[which.max(sunspot_np$freq)]
+domain_freq_ar <- sunspot_ar$freq[which.max(sunspot_ar$spec)]
+domain_freq_np <- sunspot_np$freq[which.max(sunspot_np$spec)]
 
 period_ar <- 1/(domain_freq_ar*12)
 period_np <- 1/(domain_freq_np*12)
@@ -234,7 +237,7 @@ print(period_ar)
 print(period_np)
 ```
 
-
+Both the parametric and non-parametric spectral give roughly the same max frequencies of **0.008** and **0.0077** respectively. We will use the formula, $\frac{1}{\omega\times12}$ where $\omega$ = frequency to translate the values from the **frequency domain** back to the **time domain**. Note that we multiply $\omega$ by 12 since we are dealing with monthly data. This equates out to be **10.396** years for the AR and **10.817** for the nonparametric methods. These results are consistent with the 11-year solar cycle. 
 
 ```{r}
 autoplot(decompose(sunspots))
@@ -246,19 +249,31 @@ The grey bars to the right of each panel show the relative scales of the compone
 
 --------
 
-## Lowess
+## Model Selection
 
-```{r}
-plot(coredata(sun.data), xlab = "Year", ylab = "Mean Sunspots",
-         col = "grey", lwd = 1)
-lines(lowess(coredata(sun.data), f = 0.001), lwd = 2, col = 4)
-lines(lowess(coredata(sun.data)), lty = 2, lwd =2, col = 2)
-```
+### SARIMA 
 
+A seasonal ARIMA model (SARAMA) is construed by including additional season terms in a ARIMA models. It is defined as follows:
+$$SARMA(p,q)\times(P,Q)_m$$
+Where *m* = number of observations per year. For example, a general $SARMA(p,q)\times(P,Q)_{12}$ model for monthly data is
+$$\phi(B)\Phi(B^{12})(Y_n-\mu)=\psi(B)\Psi(B^{12})\epsilon_n,$$
+where $\epsilon_n$ is a white noise process and
+
+$$
+\begin{aligned}
+ \mu = \exp && \\
+ \phi(x) = 1-\phi_1x-\dots-\phi_px^p,&& \\
+ \psi(x) = 1+\psi_1x+\dots+\psi_qx^q,&& \\
+ \Phi(x) = 1-\Phi_1x-\dots-\Phi_Px^P,&& \\
+ \Psi(x) = 1+\Psi_1x+\dots+\Psi_Qx^Q.&& \\
+\end{aligned}
+$$
+
+The seasonal part of an AR or MA model can be discovered through the seasonal lags of the PACF and ACF. 
 
 --------
 
-## Wavelet Coherence
+## Diagnostics
 
 --------
 
