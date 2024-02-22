@@ -2,6 +2,7 @@
 title: "sizhuang"
 output: html_document
 date: "2024-02-15"
+bibliography: sizhuang.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -12,10 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r load_packages, echo=FALSE}
 library(dplyr)
 library(ggplot2)
-library(forecast)
 ```
 
-Let's firt load the data.
+Let's first load the data.
 
 ```{r load_data, echo=FALSE}
 # Load data
@@ -48,7 +48,20 @@ plot.1 <- ggplot(data = df, aes(x = month, y = spots)) +
 
 plot.1
 ```
-The data looks periodic. Over the course of 234 years, we observe 22 peaks, approximately equally spaced. This hints us there may be a period of 10.6 years. To better understand any periodical behavior in the data, we analyze the data in the frequency domain. We plot the  periodogram on the unsmoothed raw data. We compute the dominant frequency, which is 0.0917 cycles per year, that is 10.909 years per cycle. This is close to our first observation. However, the unsmoothed periodogram doesn't provide us much visual clue on the data.
+
+Over the course of 234 years, we observe 22 peaks, approximately equally spaced. This hints us there may be a period of 10.6 years.
+
+To investigate the periodical behavior of the time series data, we apply Fourier transform on the data to obtain signals in the frequency domain. This involves estimating the spectral density function of our time series data.
+
+Let $\gamma_h$ be the stationary autocovariance funtion of our time series data. The spectral density function is given by 
+$$\lambda(\omega)=\sum_{h=-\infty}^\infty \gamma_he^{-2\pi i\omega h},$$
+where $\omega$ is frequency [@Chap8Slides].
+Euler's formula gives a sinusoidal expression of the exponentials  [@Chap8Slides]. We write
+$$e^{2\pi i\omega h}=\cos(2\pi\omega h)+i\sin(2\pi\omega h).$$
+The sine and cosine terms give a Fourier basis for expressing the time series as a weighted sum of these sinusoidal bases. We are interested in the weights of the bases, that is the frequency components  [@Chap8Slides]. We wish to estimate the spectral density function and identify the dominant frequency (that is the frequency where the frequency component is the largest). We apply the following three methods to estimate the spectral density function.
+
+## Periodogram on unsmoothed data
+We use R to compute the periodogram on the unsmoothed raw data directly. 
 ```{r}
 unsmoothed_spectrum<-spectrum(df$spots, main = "Unsmoothed periodogram",
   xlab="frequency (cycles per year")
@@ -56,7 +69,10 @@ unsmoothed_freq <- unsmoothed_spectrum$freq[which.max(unsmoothed_spectrum$spec)]
 unsmoothed_freq
 1/unsmoothed_freq
 ```
-Let's plot the smoothed periodogram using two rectangle windows of width 15 years to smooth the data. From the plot, we find the dominant frequency is 0.0917 cycles per year and equivalently 10.90 years per cycle.
+We compute the dominant frequency, which is 0.0917 cycles per year, that is 10.909 years per cycle. This is close to our first observation. However, the unsmoothed periodogram doesn't provide us much visual clue on the data.
+
+## Periodogram on smoothed data
+Now, we compute the periodogram on smoothed data. One way of smoothing the data is to use the default smoother provided by spec.pgram. This smooth the periodogram with modified Daniell smoothers [@R]. We set the window sizes to be 15 and 15, based on the previous analysis on the approximate cycle length of the data. (put more stuff)
 
 
 ```{r}
@@ -65,7 +81,13 @@ freq <- smoothed_spectrum$freq[which.max(smoothed_spectrum$spec)]
 freq
 1/freq
 ```
-Now, we fit an AR(p) model with the parameter p selected by AIC to estimate the spectrum. The AR model have a dominant frequency of 0.0841 cycles per year, or 11.88 years per cycle.
+From the plot, we find the dominant frequency is 0.0917 cycles per year and equivalently 10.90 years per cycle.
+
+## Estimating the spectral density function by fitting an autoregressive model
+
+Beside the non-parametric models based on periodograms, we can also fit an autoregressive model to estimate the spectral density function. An autoregressive model with order p (AR(p) for short) is written as
+$$Y_n=\sum_{i=1}^p\varphi_i Y_{n-i}+\epsilon_n,$$
+where $Y_{1:n}$ are random variables representing the AR($p$) model, $\varphi_{1:p}$ are parameters of the model and $\epsilon_{1:n}$ is a white noise process of independent and identically distributed normal random variables [@Chap3Slides]. The order $p$ itself is also a parameter and is determined using Akaike Information Criterion (AIC) [@Chap5Slides]. We don't go into the details of AIC here and we refer the readers to [@Chap5Slides] for more details on AIC. We run the following code to fit an AR($p$) model, where the parameter $p$ is picked based on AIC by R.
 
 ```{r}
 ar_spectrum <- spectrum(df$spots, method = "ar",
@@ -75,4 +97,6 @@ ar_freq <- ar_spectrum$freq[which.max(ar_spectrum $spec)]
 ar_freq
 1/ar_freq
 ```
+We observe the AR($p$) model have a dominant frequency of 0.0841 cycles per year, or 11.88 years per cycle.
+
 All three models give a period of around 11 years, which confirm our observation and also coincide with our prior knowledge of sunspot cycles.
