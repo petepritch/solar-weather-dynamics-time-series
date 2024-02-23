@@ -1,12 +1,340 @@
 ---
 title: "Midterm Project"
-author: "Pete Pritchard, Gabriel Vieria,  and Sizhuang He"
-date: "2024-02-14"
-output: html_document
+author: "Pete Pritchard and Sizhuang He"
+date: "2024-02-23"
+bibliography: references.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/cell-numeric.csl
+output: 
+  bookdown::html_document2:
+    theme: flatly
+    toc: yes
+    toc_float:
+      collapsed: true
 ---
+
+\newcommand\prob{\mathbb{P}}
+\newcommand\E{\mathbb{E}}
+\newcommand\var{\mathrm{Var}}
+\newcommand\cov{\mathrm{Cov}}
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+![Image captured by the Daniel K. Inouye Solar Telescope.](C:\Users\petep\OneDrive\Documents\School\WI24\531\STATS-531-Midterm-Project\assets\sunspotpic.jpeg)
+
+--------
+
+Check out NASA's sunspot live feed [here.](https://soho.nascom.nasa.gov/sunspots/) And the solar cycle progression from the [Space Weather Prediction Center.](https://www.swpc.noaa.gov/products/solar-cycle-progression)
+
+--------
+
+# Introduction
+
+Sunspots are massive, dark regions of strong magnetic fields on the surface of the sun. They are the result of extreme magnetic flux pushing out from within the Sun's interior [@SWPC]. This causes these areas to cool and become denser and darker than the surrounding photosphere. These regions have the potential to trigger explosive phenomena like solar flares and coronal mass ejections. It's crucial for scientists to model sunspot behavior as solar activity can have significant effects on Earth's space environment, GPS navigation, satellite communications, power grids, and so much more. 
+
+--------
+
+## Literature
+
+It's evident that a robust understanding of space weather is of extreme importance given our world's increasing reliance on modern technologies. Moreover, space is a fascinating topic. That said, there is no shortage of scientific research on applying different statistical modeling techniques to this particular data set. Sunspots and related solar activities have been studied using various techniques including, multifractal analysis, correlation analysis, wavelet transforms, deep neural networks, autoregression, and much more [@hu]. 
+
+Despite the varying modeling techniques, there is one phenomenon that all researchers agree on - the sun exhibits an approximate 11 year solar cycle. The solar cycle is indicated by the frequency and intensity of visible sunspots, and have proven to be quite difficult to predict [@daisy]. In this study, we will employ various classical time series methods in attempt to capture the implicit behavior in sunspot activity. 
+
+
+
+```{r load_packages, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(zoo)
+library(forecast)
+library(lmtest)
+library(astsa)
+library(cowplot)
+library(scales)
+library(tseries)
+library(tidyquant)
+```
+
+--------
+
+## Data
+
+Our data includes 3300 (as of February 15, 2024) observations of monthly mean relative sunspot numbers (count) from 1749 to present. The data was collected by the Swiss Federal Observatory, Zurich until 1960, then the Tokyo Astronomical Observatory. The data is readily available at the Solar Influences Data Analysis Center's (SIDC) [website](https://www.sidc.be/SILSO/datafiles). A description of the data set provided by the SIDC is given below: 
+
+- Column 1-2: Gregorian Calender Date
+- Column 3: Date in fraction of year for the middle of the corresponding month
+- Column 4: Monthly mean total sunspot number
+- Column 5: Monthly mean standard deviation of the input sunspot numbers from individual stations.
+- Column 6: Number of observations used to compute the monthly mean total sunspot number.
+- Column 7: Definitive/provisional marker. A blank indicates that the value is definitive. A '*' symbol indicates that the monthly value is still provisional and is subject to a possible revision (Usually the last 3 to 6 months).
+
+This report will focus on uni-variate analysis, and thus we will only use column 4, monthly mean total sunspot number. 
+
+```{r table, echo=FALSE, results="asis"}
+# Comment out the line of code for the machine you are not on...
+
+#data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+#                 sep = ";") # Mac machine
+
+data <- read.csv("C:/Users/petep/OneDrive/Documents/School/WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+                 sep = ";") # Windows machine
+
+data <- data %>%
+  rename(
+    Year = X1749, 
+    Month = X01,
+    date.franction = X1749.042, 
+    monthly.mean = X96.7,
+    monthly.sd = X.1.0,
+    monthly.obs = X.1,
+    prov.marker = X1
+  )
+
+knitr::kable(data[1:5,], caption = "Monthly mean sunspot data")
+```
+
+--------
+
+# Analysis
+
+## Exploratory Analysis
+
+As one does in time series modeling, we start off by simply plotting the data.
+
+```{r, echo=FALSE}
+# Create timestamps
+start_date <- c(1749, 1) # Start date
+
+# Create ts
+ss <- ts(data$monthly.mean, start = start_date, frequency = 12)
+
+# Data frame with formatted date for plots
+df <- data.frame(y = as.matrix(ss), date=time(ss))
+```
+
+```{r echo=FALSE, fig.cap="Inital plots", warning=FALSE, message=FALSE}
+p1 <- df %>%
+    ggplot(aes(date, y)) +
+    geom_point(color = palette_light()[[1]], alpha = 0.5) +
+    geom_smooth(method = "loess", span = 0.2, se = FALSE) +
+    theme_tq() +
+    labs(
+        title = "From 1749 to 2024 (Full Data Set)",
+        ylab = "Sunspot count"
+    )
+
+p2 <- df %>%
+    filter(date > 2000) %>%
+    ggplot(aes(date, y)) +
+    geom_line(color = palette_light()[[1]], alpha = 0.5) +
+    geom_point(color = palette_light()[[1]]) +
+    geom_smooth(method = "loess", span = 0.2, se = FALSE) +
+    theme_tq() +
+    labs(
+        title = "2008 to 2024 (Zoomed In To Show Cycle)",
+        caption = "",
+        ylab = "Sunspot count"
+    )
+
+p_title <- ggdraw() + 
+    draw_label("Sunspots", size = 18, fontface = "bold", colour = palette_light()[[1]])
+
+plot_grid(p_title, p1, p2, ncol = 1, rel_heights = c(0.1, 1, 1))
+```
+
+From the top plot in figure 1, there is no obvious trend. However, the sharp peaks seem to be regular indicating there might be some form seasonality. It's difficult to tell if the data is stationary. For a time series to be stationary, it must possess properties that do not depend on the time at which the series is observed (cite). So, a series of data points with trends or seasonality are not stationary, but a series with cyclic behavior (but no trend or seasonality) is stationary (cite). We zoom into the data in the bottom plot in figure 1 to get a better idea of what's going on.
+
+Over short term periods, it may appear that there are linear trends. However, looking back at the full data, it becomes apparent that these are elements of a much broader cyclical trend. There are many successive points indicating auto-regression, however the strength of the relationship changes over time with a stronger relationship occurring at the trough of the cycle. This shows an obvious change in variance. Furthermore, the bottom plot highlights the general consensus of an approximate 11 year solar cycle. 
+
+```{r acf_pacf_fullm, fig.cap="ACF of full data at lags = 250"}
+acf(ss, lag=250, main="ACF Sunspots")
+```
+
+The sample autocorrelation plot in fig.2 also provide us with some insight. 250 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting, again, that future values of the series are correlated with past values. There is autocorrelation of .05 at approximately lag 11 (132/12moth re-scaled), supplying further evidence of the solar cycle. Ultimately, this process appears to be non-stationary and seasonal.  
+
+First, we'll seasonally difference the data, shown in Figure (). Although it is not obvious, this appears to be stationary, so we won't take an additional first difference.
+
+```{r seasonal_diff, echo=FALSE, fig.cap="Seasonally differenced full data with ACF and PACF"}
+ss.s.diff <- diff(ss, lag = 12, differences = 1)
+ggtsdisplay(ss.s.diff)
+```
+
+Later in the report, we'll use the ACF and PACF shown in Figure () to estimate the appropriate model parameters to fit to our series.
+
+
+--------
+
+## Spectral Analysis
+
+--------
+
+# Model Selection
+
+## SARIMA 
+
+A seasonal ARIMA model (SARAMA) is construed by including additional season terms in a ARIMA models. It is defined as follows:
+$$SARMA(p,q)\times(P,Q)_m$$
+Where *m* = number of observations per year. For example, a general $SARMA(p,q)\times(P,Q)_{12}$ model for monthly data is
+$$\phi(B)\Phi(B^{12})(Y_n-\mu)=\psi(B)\Psi(B^{12})\epsilon_n,$$
+where $\epsilon_n$ is a white noise process and
+
+$$
+\begin{aligned}
+ \mu = \exp && \\
+ \phi(x) = 1-\phi_1x-\dots-\phi_px^p,&& \\
+ \psi(x) = 1+\psi_1x+\dots+\psi_qx^q,&& \\
+ \Phi(x) = 1-\Phi_1x-\dots-\Phi_Px^P,&& \\
+ \Psi(x) = 1+\Psi_1x+\dots+\Psi_Qx^Q.&& \\
+\end{aligned}
+$$
+
+The seasonal part of an AR or MA model can be discovered through the seasonal lags of the PACF and ACF. Considering what we already know from literature and confirmed by our analysis, we will let $m=132$. We will consider the ACF and PACF from figure () to estimate values for $p,q,P,Q$. Then we will select a second model using a more algorithmic approach called grid search and compare the performance of both. Grid search is used to find optimal hyper parameters of a model which results in the most accurate fitting.  
+
+The appropriate SARIMA model can be roughly calculated using the ACF and PACF shown in Figure (). There are spikes in the PACF at lags 12, 24 and 26, but nothing similar in the ACF. This could be indicative of a seasonal AR(2) term. In terms of non-seasonal lags, the PACF shows numerous significant spikes, suggesting a high, complex AR(p) term. Lastly, the decaying wave pattern in the ACF isn't suggestive of any straightforward model. 
+
+## Grid Search {.tabset}
+
+Our eye-balling analysis suggests that an $SARIMA(3,0,0)\times(2,1,0)_{12}$ might be a good fit. We'll fit this along with several other models using an algorithmic approach called grid search. 
+
+### Table 1
+
+```{r sarima_grid, echo=FALSE, warning=FALSE, message=FALSE}
+aic_table <- function(data,P,Q){
+  table <- matrix(NA,(P+1),(Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1,q+1] <- arima(data,order=c(p,0,q),
+                              seasonal=list(order=c(1,1,0),
+                                              period=12))$aic
+    }
+  }
+  dimnames(table) <- list(paste("AR",0:P, sep=""), 
+    paste("MA",0:Q,sep=""))
+  table
+}
+ss_aic_table <- aic_table(ss,3,3)
+require(knitr)
+kable(ss_aic_table,digits=2, caption = "P=1, Q=0")
+```
+
+### Table 2
+
+```{r sarima_grid.2, echo=FALSE, warning=FALSE, message=FALSE}
+aic_table <- function(data,P,Q){
+  table <- matrix(NA,(P+1),(Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1,q+1] <- arima(data,order=c(p,0,q),
+                              seasonal=list(order=c(2,1,0),
+                                              period=12))$aic
+    }
+  }
+  dimnames(table) <- list(paste("AR",0:P, sep=""), 
+    paste("MA",0:Q,sep=""))
+  table
+}
+ss_aic_table <- aic_table(ss,3,3)
+require(knitr)
+kable(ss_aic_table,digits=2, caption = "P=2, Q=0")
+```
+
+### Table 3
+
+```{r sarima_grid.3, echo=FALSE, warning=FALSE, message=FALSE}
+aic_table <- function(data,P,Q){
+  table <- matrix(NA,(P+1),(Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1,q+1] <- arima(data,order=c(p,0,q),
+                              seasonal=list(order=c(1,1,1),
+                                              period=12))$aic
+    }
+  }
+  dimnames(table) <- list(paste("AR",0:P, sep=""), 
+    paste("MA",0:Q,sep=""))
+  table
+}
+ss_aic_table <- aic_table(ss,3,3)
+require(knitr)
+kable(ss_aic_table,digits=2, caption = "P=1, Q=1")
+```
+
+### Table 4
+
+```{r sarima_grid.4, echo=FALSE, warning=FALSE, message=FALSE}
+aic_table <- function(data,P,Q){
+  table <- matrix(NA,(P+1),(Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1,q+1] <- arima(data,order=c(p,0,q),
+                              seasonal=list(order=c(0,1,1),
+                                              period=12))$aic
+    }
+  }
+  dimnames(table) <- list(paste("AR",0:P, sep=""), 
+    paste("MA",0:Q,sep=""))
+  table
+}
+ss_aic_table <- aic_table(ss,3,3)
+require(knitr)
+kable(ss_aic_table,digits=2, caption = "P=0, Q=1")
+```
+
+### Table 5
+
+```{r sarima_grid.5, echo=FALSE, warning=FALSE, message=FALSE}
+aic_table <- function(data,P,Q){
+  table <- matrix(NA,(P+1),(Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1,q+1] <- arima(data,order=c(p,0,q),
+                              seasonal=list(order=c(0,1,2),
+                                              period=12))$aic
+    }
+  }
+  dimnames(table) <- list(paste("AR",0:P, sep=""), 
+    paste("MA",0:Q,sep=""))
+  table
+}
+ss_aic_table <- aic_table(ss,3,3)
+require(knitr)
+kable(ss_aic_table,digits=2, caption = "P=0, Q=2")
+```
+
+--------
+
+Of these models, we select the one with the lowest Akaike's information criterion (AIC). AIC is essentially "minus twice the maximized log likelihood plus twice the number of parameters," and is defined by:
+
+$$AIC=-2\times\ell(\theta^*)+2D$$
+
+The grid search approach chose the $ARIMA(3,0,2)\times(1,1,1)_{12}$ model with the lowest AIC (i.e., the best). For our final model, we will incorporate findings from the exploratory analysis, spectral analysis, and knowledge from related readings. For this model, we'll change the seasonality competent to $m=128$ and give it the same seasonal and non-seasonal $AR(p)$ and $MA(q)$ terms as the grid search model. Thus, the third model can be written as $ARIMA(3,0,2)\times(1,1,1)_{128}$.
+
+For our final model we will use a R function called Autoarima() to estimate the best model given our data. R chose the $SARIMA(1,0,2)\times(1,0,1)_{12}$ model.
+
+```{r, echo=FALSE}
+mod.1 <- arima(ss, order=c(3,0,0), seasonal=list(order=c(2,1,0), period=12))
+mod.2 <- arima(ss, order=c(3,0,2), seasonal=list(order=c(1,1,1), period=12))
+mod.3 <- arima(ss, order=c(1,0,2), seasonal=list(order=c(1,0,1), period=12))
+
+aic.1 <- mod.1$aic
+aic.2 <- mod.2$aic
+aic.3 <- mod.3$aic
+```
+
+
+--------
+
+## Diagnostics
+
+We will now analyze our selected model through...
+
+## Conclusion 
+
+--------
+
+## Future Extensions
+
+There are numerous avenues one could take exploring this data set. It would be interesting to see how more modern machine/deep learning methods perform in comparison to classical time series approaches. The 11-year solar cycle is indeed glaring, however perhaps it's so bright that it's caused researchers to overlook hidden seasonal trends? This analysis showed that fitting a model to the short period is a greater challenge that its long-run counterpart. Developing a robust understanding of the variation in the seasonal peaks of solar activity would give scientists heightened abilities to mitigate the effects of harmful solar events. 

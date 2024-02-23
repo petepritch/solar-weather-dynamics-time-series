@@ -49,6 +49,8 @@ library(ggplot2)
 library(knitr)
 library(zoo)
 library(forecast)
+library(lmtest)
+library(astsa)
 ```
 
 --------
@@ -69,11 +71,11 @@ This report will focus on uni-variate analysis, and thus we will only use column
 ```{r table, echo=FALSE, results="asis"}
 # Comment out the line of code for the machine you are not on...
 
-data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
-                 sep = ";") # Mac machine
+#data <- read.csv("/Users/petepritchard/Documents/School/UM WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+#                 sep = ";") # Mac machine
 
-#data <- read.csv("C:/Users/petep/OneDrive/Documents/School/WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
-#                 sep = ";") # Windows machine
+data <- read.csv("C:/Users/petep/OneDrive/Documents/School/WI24/531/STATS-531-Midterm-Project/data/SN_m_tot_V2.0.csv", 
+                 sep = ";") # Windows machine
 
 data <- data %>%
   rename(
@@ -105,92 +107,51 @@ timestamps <- seq(start_date, end_date, by = "month")
 sun.data <- zoo(data$monthly.mean, timestamps)
 ```
 
+```{r}
+# Create timestamps
+start_date <- c(1749, 1) # Start date
+
+# Create ts
+ss <- ts(data$monthly.mean, start = start_date, frequency = 12)
+```
+
 ```{r initial_plot, fig.cap="Time series plot of all mean sunspot data from sample", echo=FALSE}
-plot.zoo(sun.data, xlab = "Year", ylab = "Mean Sunspots",
-         col = "mediumblue", lwd = 1)
-title("Monthly Mean Sunspot Count 1749-2024")
+ggtsdisplay(ss, lag.max = 300, main = "Monthly Mean Sunspot Count 1749-2024", xlab = "Year", ylab = "Mean Sunspots", 
+            theme = theme_bw())
 ```
 
 From the plot in figure 1, there is no obvious trend. However, the sharp peaks seem to be regular indicating there might be some form seasonality. It's difficult to tell if the data is stationary. For a time series to be stationary, it must possess properties that do not depend on the time at which the series is observed (cite). So,a series with trends or seasonality are not stationary, but a series with cyclic behavior (but no trend or seasonality) is stationary (cite). We'll zoom into the data to get a better idea of what's going on. 
 
-
-Plotting the sample autocorrelation will give us some insight. The sample correlation, also known as the ACF, if defined by:
+The sample autocorrelation and partial correlation plots in fig.1 also provide us with some insight. The sample correlation, also known as the ACF, if defined by:
 
 $$\rho_h=\rho(y_{1:N}^*)=\frac{\gamma_h}{\gamma_0}$$
 
-```{r}
-#plotting ACF and PACF
-par(mfrow=c(1,2))
-acf(coredata(sun.data), lag.max = 500, main = "ACF of Monthly Sunspots ")
-pacf(coredata(sun.data), lag.max = 500, main = "PACF of Monthly Sunspots")
-```
+250 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting that future values of the series are correlated with past values. Ultimately, this process in non-stationary. There's no discernible pattern in the PACF plot, but there are noticeably significant lags. 
 
-150 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting auto regression. There's no discernible pattern in the PACF plot, but there are noticeably significant lags at 2 and 18. 
-
-```{r zoomed_plot_first5001}
-# # Slice the first 100 observations of the data
-# zoomed_data <- sun.data[1:500]
-# 
-# # Plot the sliced data
-# plot.zoo(zoomed_data, xlab = "Year", ylab = "Mean Sunspots",
-#          col = "mediumblue", lwd = 1)
-# title("Monthly Mean Sunspot Count (First 500 Observations)")
-# abline(v = index(zoomed_data)[80], col = "red", lty = 2)
-# abline(v = index(zoomed_data)[208], col = "red", lty = 2)
-# abline(v = index(zoomed_data)[320], col = "red", lty = 2)
-# abline(v = index(zoomed_data)[425], col = "red", lty = 2)
-```
-
-
-```{r zoomed_plot_first500, fig.cap="Last 200 observations of sample data"}
-# Slice the last 200 observations of the data
-zoomed_data <- tail(sun.data, 200)
+```{r zoomed_plot_first500, fig.cap="Last 200 observations of sample data. Dotted red lines denote the start/stop of solar cycle"}
+zoom_ss <- tail(ss, 200)
 
 # Plot the sliced data
-plot.zoo(zoomed_data, xlab = "Year", ylab = "Mean Sunspots",
-         col = "mediumblue", lwd = 1)
+plot(zoom_ss, xlab = "Year", ylab = "Mean Sunspots",lwd = 1)
 title("Monthly Mean Sunspot Count (Short Period)")
-abline(v = index(zoomed_data)[20], col = "red", lty = 2)
-abline(v = index(zoomed_data)[150], col = "red", lty = 2)
+abline(v = index(zoom_ss)[20], col = "red", lty = 2)
+abline(v = index(zoom_ss)[150], col = "red", lty = 2)
 ```
 
-Over short term periods, it may appear that there are linear trends. However, looking back at the full data, it becomes apparent that these are elements of a much broader cyclical trend. There are many successive points indicating autoregression, however the strength of the relationship changes over time with a stronger relationship occurring at the low point of the cycle. This shows ut that it's obvious that the variance changes. Furthermore, figure 2 highlights the general concurrences of an approximate 11 year solar cycle. 
+Over short term periods, it may appear that there are linear trends. However, looking back at the full data, it becomes apparent that these are elements of a much broader cyclical trend. There are many successive points indicating auto-regression, however the strength of the relationship changes over time with a stronger relationship occurring at the low point of the cycle. This shows an obvious change in variance. Furthermore, figure 2 highlights the general consensus of an approximate 11 year solar cycle. 
 
-```{r}
-#plotting ACF and PACF
-par(mfrow=c(1,2))
-acf(coredata(zoomed_data), lag.max = 50, main = "ACF of Monthly Sunspots short period")
-pacf(coredata(zoomed_data), lag.max = 50, main = "PACF of Monthly Sunspots short period")
+Now we'll difference for trend and seasonality, and have a look at the ACF and PACF behavior to asses what non seasonal terms could work in our model.
+
+```{r both_diff}
+ss.rdiff.sdiff <- diff(diff(ss, lag=12))
+ggtsdisplay(ss.rdiff.sdiff)
 ```
 
-
-```{r}
-# Plotting short and long term ACF to compare
-par(mfrow=c(1,2))
-acf(coredata(sun.data), lag.max = 50, main = "Long Term")
-acf(coredata(zoomed_data), lag.max = 40, main = "Short Term")
+```{r, fig.cap="48 lags on the basis of ACF and PACF of the 12th differences"}
+acf2(ss.rdiff.sdiff, 48, main = "Seasonal and Trend Differenced Sunspot Data")
 ```
 
 
-The ACF plot on bother long and short terms sections of the data yield the same results, this implies weak stationarity, and confirms what we expected from the initial plots. This is kind of a bummer as stationarity leads to convenient statistical properties. 
-
-```{r}
-annual_short <- diff(coredata(zoomed_data))
-
-# Plot the sliced differenced data
-plot.zoo(annual_short, xlab = "Year", ylab = "Mean Sunspots",
-         col = "mediumblue", lwd = 1)
-title("Differenced Monthly Mean Sunspot Count (Short Period)")
-```
-
-After applying seasonal differenceing, the changes in variance becomes very apparent in the residual plot. 
-
-```{r}
-#plotting ACF and PACF
-par(mfrow=c(1,2))
-acf(coredata(annual_short), lag.max = 50, main = "ACF of Monthly Sunspots short period")
-pacf(coredata(annual_short), lag.max = 50, main = "PACF of Monthly Sunspots short period")
-```
 
 
 $$Y_t = \phi_1 Y_{n-1} +\phi_2 Y_{n-2} + \dots + \phi_p Y_{n-p} + $$
@@ -198,12 +159,7 @@ $$Y_t = \phi_1 Y_{n-1} +\phi_2 Y_{n-2} + \dots + \phi_p Y_{n-p} + $$
 --------
 
 
-```{r}
-#plotting ACF and PACF
-par(mfrow=c(1,2))
-forecast::Acf(coredata(sun.data), lag.max = 100, main = "ACF of Monthly Sunspots")
-forecast::Acf(coredata(sun.data), type = "partial", lag.max = 100, main = "PACF of Monthly Sunspots")
-```
+
 
 --------
 
@@ -269,7 +225,33 @@ $$
 \end{aligned}
 $$
 
-The seasonal part of an AR or MA model can be discovered through the seasonal lags of the PACF and ACF. 
+The seasonal part of an AR or MA model can be discovered through the seasonal lags of the PACF and ACF. Considering what we already know from literature and confirmed by our analysis, we will let $m=132$. We will consider the ACF and PACF from figure () to estimate values for $p,q,P,Q$. Then we will select a second model using a more algorithmic approach called grid search and compare the performance of both. Grid search is used to find optimal hyper parameters of a model which results in the most accurate fitting.  
+
+
+### Grid Search
+
+```{r}
+aic_table <- function(data,P,Q){
+  table <- matrix(NA,(P+1),(Q+1))
+  for(p in 0:P) {
+    for(q in 0:Q) {
+      table[p+1,q+1] <- arima(data,order=c(p,1,q),
+                              seasonal=list(order=c(0,1,0),
+                                              period=132))$aic
+    }
+  }
+  dimnames(table) <- list(paste("AR",0:P, sep=""), 
+    paste("MA",0:Q,sep=""))
+  table
+}
+ss_aic_table <- aic_table(ss,2,2)
+require(knitr)
+kable(ss_aic_table,digits=2)
+```
+
+Akaike's information criterion. Minus twice the maximized log likelihood plus twice the number of parameters.
+
+$$AIC=-2\times\ell(\theta^*)+2D$$
 
 --------
 
@@ -284,3 +266,28 @@ The seasonal part of an AR or MA model can be discovered through the seasonal la
 ## Future Extensions
 
 There are numerous avenues one could take exploring this data set. It would be interesting to see how more modern machine/deep learning methods perform in comparison to classical time series approaches. The 11-year solar cycle is indeed glaring, however perhaps it's so bright that it's caused researchers to overlook hidden seasonal trends? 
+
+
+```{r test, seasonal_diff}
+# Create timestamps
+start_date <- c(1749, 1) # Start date
+
+# Create ts
+mean.ss <- ts(data$monthly.mean, start = start_date, frequency = 12)
+mean.ss.sdiff <- diff(mean.ss, lag = 12, differences = 1)
+ggtsdisplay(mean.ss.sdiff)
+```
+
+The ACF is decaying rapidly during zero, indicating some trend in the series. In the PACF there are signficant spikes. 
+
+```{r classic_diff}
+ss.sdiff <- diff(ss, lags = 128)
+ggtsdisplay(ss.sdiff)
+```
+
+```{r both_diff}
+mean.ss.rdiff.sdiff <- diff(diff(mean.ss, lag=132))
+ggtsdisplay(mean.ss.rdiff.sdiff)
+```
+
+
