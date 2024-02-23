@@ -7,7 +7,7 @@ bibliography: gabriel.bib
 
 ## Literature Review
 
-###A History of Sunspots
+### A History of Sunspots
 
 Since ancient times dark spots on the surface of the Sun have been observed by cultures around the world. The earliest written records of these blemishes, known as 'sunspots' date back to ancient China, at least as early as 364 B.C. Arab, Armenian, Russian and other texts from soon after the 4th Century B.C all make reference to dark formations on the Sun's surface. In medieval Europe, the first records of observations of these formations in medieval Europe are found in chronicles dated 1128 A.D.\cite{vasiljeva2021history}.
 
