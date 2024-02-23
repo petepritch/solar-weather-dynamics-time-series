@@ -61,7 +61,7 @@ $$ MA(q): Y_t = \epsilon_t + \psi_{1} \epsilon_{t-1} + \psi_{t-2} \epsilon_{t-2}
 The Autocorrelation Function (ACF) measures the linear dependency between observations in a time series separated by $k$ time lags. For a time series $Y_t$, where $t$ represents the time, the ACF at lag $k$ is defined as @Chap5Slides:
 
 
-$$ ACF(k) = \frac{\sum_{t=k+1}^{T} (Y_t - \bar{Y})(Y_{t-k} - \bar{Y})}{\sum_{t=1}^{T} (Y_t - \bar{Y})^2} $$
+$$ \text{ACF}(k) = \frac{\sum_{t=k+1}^{T} (Y_t - \bar{Y})(Y_{t-k} - \bar{Y})}{\sum_{t=1}^{T} (Y_t - \bar{Y})^2} $$
 
 
 where $T$ is the total number of observations, $Y_t$ is the value of the time series at time $t$, $\bar{Y}$ is the mean of the time series, $k$ is the lag, and $ACF(k)$ is the autocorrelation function at lag $k$.
@@ -79,7 +79,7 @@ The ACF value ranges from -1 to 1, where:
 The Partial Autocorrelation Function (PACF) measures the extent of the linear association between an observation in a time series and its lag, with the effects of the intervening lags removed. For a time series $Y_t$, the PACF at lag $k$ is defined after controlling for the values of the time series at all shorter lags. The PACF at lag $k$ can be formally represented as @Chap5Slides:
 
 
-$$ PACF(k) = \text{Corr}(Y_t - \hat{Y}_t, Y_{t-k} - \hat{Y}_{t-k}) $$
+$$ \text{PACF}(k) = \text{Corr}(Y_t - \hat{Y}_t, Y_{t-k} - \hat{Y}_{t-k}) $$
 
 
 where: $Y_t$ is the value of the time series at time $t$, $\hat{Y}_t$ is the predicted value of $Y_t$ based on all shorter lags than $k$, $\hat{Y}_{t-k}$ is the predicted value of $Y_{t-k}$ based on all shorter lags than $k$, $k$ is the lag number, and $PACF(k)$ is the partial autocorrelation at lag $k$.
