@@ -31,7 +31,7 @@ Additionally, it is generally agreed that sunspot prevalence, through associated
 
 ### ARIMA Model
 
-The ARIMA model, or AutoRegressive Integrated Moving Average model, is defined by three parameters: $p, d$ , and $q$. It is used for analyzing and forecasting time series data, and is expressed as $\text{ARIMA}(p,d,q)$. The model components are @Chap3Slides:
+The ARIMA model, or AutoRegressive Integrated Moving Average model, is defined by three parameters: $ p, d $ , and $q$. It is used for analyzing and forecasting time series data, and is expressed as $\text{ARIMA}(p,d,q)$. The model components are @Chap3Slides:
 
 
 1. **Autoregressive (AR) component ($p$)**: This part predicts the current value of the time series using a linear combination of its previous values. The order $p$ indicates how many past values are used. The AR part of the model can be represented as:
