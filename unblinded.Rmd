@@ -115,7 +115,7 @@ ss <- ts(data$monthly.mean, start = start_date, frequency = 12)
 df <- data.frame(y = as.matrix(ss), date=time(ss))
 ```
 
-```{r echo=FALSE, fig.cap="Inital plots", warning=FALSE, message=FALSE}
+```{r 1st_plot, echo=FALSE, fig.cap="Time series plots of full data and tail subset", warning=FALSE, message=FALSE}
 p1 <- df %>%
     ggplot(aes(date, y)) +
     geom_point(color = palette_light()[[1]], alpha = 0.5) +
@@ -145,24 +145,24 @@ p_title <- ggdraw() +
 plot_grid(p_title, p1, p2, ncol = 1, rel_heights = c(0.1, 1, 1))
 ```
 
-From the top plot in figure 1, there is no obvious trend. However, the sharp peaks seem to be regular indicating there might be some form seasonality. It's difficult to tell if the data is stationary. For a time series to be stationary, it must possess properties that do not depend on the time at which the series is observed (cite). So, a series of data points with trends or seasonality are not stationary, but a series with cyclic behavior (but no trend or seasonality) is stationary (cite). We zoom into the data in the bottom plot in figure 1 to get a better idea of what's going on.
+From the top plot in Figure \@ref(fig:1st_plot), there is no obvious trend. However, the sharp peaks seem to be regular indicating there might be some form seasonality. It's difficult to tell if the data is stationary. For a time series to be stationary, it must possess properties that do not depend on the time at which the series is observed (cite). So, a series of data points with trends or seasonality are not stationary, but a series with cyclic behavior (but no trend or seasonality) is stationary (cite). We zoom into the data in the bottom plot in Figure \@ref(fig:1st_plot) to get a better idea of what's going on.
 
 Over short term periods, it may appear that there are linear trends. However, looking back at the full data, it becomes apparent that these are elements of a much broader cyclical trend. There are many successive points indicating auto-regression, however the strength of the relationship changes over time with a stronger relationship occurring at the trough of the cycle. This shows an obvious change in variance. Furthermore, the bottom plot highlights the general consensus of an approximate 11 year solar cycle. 
 
-```{r acf_pacf_fullm, fig.cap="ACF of full data at lags = 250"}
+```{r acf_pacf_full, fig.cap="ACF of full data at lags = 250"}
 acf(ss, lag=250, main="ACF Sunspots")
 ```
 
-The sample autocorrelation plot in fig.2 also provide us with some insight. 250 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting, again, that future values of the series are correlated with past values. There is autocorrelation of .05 at approximately lag 11 (132/12moth re-scaled), supplying further evidence of the solar cycle. Ultimately, this process appears to be non-stationary and seasonal.  
+The sample autocorrelation plot in Figure \@ref(fig:acf_pacf_full) also provide us with some insight. 250 lags displays a patterned behavior in which a decaying sin wave becomes obvious, suggesting, again, that future values of the series are correlated with past values. There is autocorrelation of .05 at approximately lag 11 (132/12moth re-scaled), supplying further evidence of the solar cycle. Ultimately, this process appears to be non-stationary and seasonal.  
 
-First, we'll seasonally difference the data, shown in Figure (). Although it is not obvious, this appears to be stationary, so we won't take an additional first difference.
+First, we'll seasonally difference the data, shown in Figure \@ref(fig:seasonal_diff). Although it is not obvious, this appears to be stationary, so we won't take an additional first difference.
 
 ```{r seasonal_diff, echo=FALSE, fig.cap="Seasonally differenced full data with ACF and PACF"}
 ss.s.diff <- diff(ss, lag = 12, differences = 1)
 ggtsdisplay(ss.s.diff)
 ```
 
-Later in the report, we'll use the ACF and PACF shown in Figure () to estimate the appropriate model parameters to fit to our series.
+Later in the report, we'll use the ACF and PACF shown in Figure \@ref(fig:seasonal_diff) to estimate the appropriate model parameters to fit to our series.
 
 
 --------
@@ -337,4 +337,4 @@ We will now analyze our selected model through...
 
 ## Future Extensions
 
-There are numerous avenues one could take exploring this data set. It would be interesting to see how more modern machine/deep learning methods perform in comparison to classical time series approaches. The 11-year solar cycle is indeed glaring, however perhaps it's so bright that it's caused researchers to overlook hidden seasonal trends? This analysis showed that fitting a model to the short period is a greater challenge that its long-run counterpart. Developing a robust understanding of the variation in the seasonal peaks of solar activity would give scientists heightened abilities to mitigate the effects of harmful solar events. 
+There are numerous avenues one could take exploring this data set. It would be interesting to see how more modern machine/deep learning methods perform in comparison to classical time series approaches, especially in terms of forecasting. The 11-year solar cycle is indeed glaring, however perhaps it's so bright that it's caused researchers to overlook hidden seasonal trends? This analysis showed that fitting a model to the short period is a greater challenge that its long-run counterpart. Developing a robust understanding of the variation in the seasonal peaks of solar activity would give scientists heightened abilities to mitigate the effects of harmful solar events. 
