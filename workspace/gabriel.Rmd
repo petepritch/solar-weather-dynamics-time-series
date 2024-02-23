@@ -93,4 +93,35 @@ The interpretation of PACF values is similar to that of the ACF:
     1. A value close to -1 indicates a strong negative direct relationship.
     1. A value close to 0 suggests no direct relationship.
 
+# Some Random Analysis (Much the same as Pete and Sizhuang's mostly
+
+```{r}
+data_url <- "https://ionides.github.io/531w24/hw04/sunspots.txt"
+sunspots_data <- read.table(data_url,header = TRUE)
+str(sunspots_data)
+
+plot(sunspots_data$Time, sunspots_data$Number, type = "l", main = "Sunspot Number over Time")
+```
+Let's try to use ```spectrum``` to find the spectral density function with the default
+
+```{r}
+spectrum(sunspots_data$Number)
+```
+```{r}
+spectrum(sunspots_data$Number, spans = c(3,5,3), main = "Smoothed Periodogram" )
+```
+
+```{r}
+spectrum(sunspots_data$Number, method = "ar")
+```
+
+```{r}
+max_lag = 200
+type = "correlation" 
+acf(lag.max = max_lag, sunspots_data$Number, type = type)
+```
+
+The autocorrelation shows, predictably because the high periodicity of the data, that there is alotof autocorrelation over many lags. The autocorrelation seems to vary in a sinosoidal manner with a period of around 125 months. This leads us to believe that there should be trends of around 11 years and so the spectral density would have higher powers at lower frequencies which is what we observe in the periodograms. The peaks are however a little lower than what we would expect for an 11 year cycle. This concurs with the findings of the national oceanic and atmospheric administration: https://www.swpc.noaa.gov/phenomena/sunspotssolar-cycle#:~:text=The%20total%20number%20of%20sunspots,started%20being%20assigned%20consecutive%20numbers.
+
+The AR, raw and smoothed periodograms all seem to agree on most qualitative points. The density peaks very early and decays relatively quickly indicating that more long term trends, of many years, are probably more important.
 
