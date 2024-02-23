@@ -11,19 +11,86 @@ bibliography: gabriel.bib
 
 Since ancient times dark spots on the surface of the Sun have been observed by cultures around the world. The earliest written records of these blemishes, known as 'sunspots' date back to ancient China, at least as early as 364 B.C. Arab, Armenian, Russian and other texts from soon after the 4th Century B.C all make reference to dark formations on the Sun's surface. In medieval Europe, the first records of observations of these formations in medieval Europe are found in chronicles dated 1128 A.D.@vasiljeva2021history.
 
-In 1608 the invention (or at least patenting) of the telescope in Holland changed the face of astronomy together, including the study of sunspots. By 1609 Thomas Harriot had made detailed sketches of the sunspots on the surface of the Sun. By 1610 Johann Fabricius had published the first paper detailing the appearance of sunspots (by tracking the position of particular sunspots he was also able to deduce that the Sun rotated on its axis with a period of about 30 days which turned out to be very accurate) \cite{casanovas1997early}. Soon after their discovery a number of astronomers across Europe diligently took notes on the formation of sunspots. However, by the middle of the 18th Century, interest had waned and so the number of observations reached a nadir before picking up later in that century.
+In 1608 the invention (or at least patenting) of the telescope in Holland changed the face of astronomy together, including the study of sunspots. By 1609 Thomas Harriot had made detailed sketches of the sunspots on the surface of the Sun. By 1610 Johann Fabricius had published the first paper detailing the appearance of sunspots (by tracking the position of particular sunspots he was also able to deduce that the Sun rotated on its axis with a period of about 30 days which turned out to be very accurate) @casanovas1997early. Soon after their discovery a number of astronomers across Europe diligently took notes on the formation of sunspots. However, by the middle of the 18th Century, interest had waned and so the number of observations reached a nadir before picking up later in that century.
 
-This history makes sunspots the earliest recorded feature of the solar surface. Until 1776 when Christian Horrebu suggested periodicity in the presence of sunspots, scientists were of the opinion that their appearance was completely stochastic. In 1843, Heinrich Schwabe showed that the number of observed sunspots had a period of approximately 10 years \cite{vasiljeva2021history}. In 1852 Rudolph Wolff in Zurich started the first permanent record keeping of sunspot numbers. He also introduced the idea of a daily 'relative' sunspot number (a.k. the 'Wolf number') and calculated a solar period of 11.1 years (an improvement from Horrebu's calculation).
+This history makes sunspots the earliest recorded feature of the solar surface. Until 1776 when Christian Horrebu suggested periodicity in the presence of sunspots, scientists were of the opinion that their appearance was completely stochastic. In 1843, Heinrich Schwabe showed that the number of observed sunspots had a period of approximately 10 years @vasiljeva2021history. In 1852 Rudolph Wolff in Zurich started the first permanent record keeping of sunspot numbers. He also introduced the idea of a daily 'relative' sunspot number (a.k. the 'Wolf number') and calculated a solar period of 11.1 years (an improvement from Horrebu's calculation).
 
-From Wolff's work, records of sunspot observations from around 1740 onwards are considered to be quite reliable. In 2011 researchers started a project to reconstruct sunspot data from as far back as 1610, however these still have significant issues that cause worries about reliability \cite{vasiljeva2021history}. In 2015 the SILSO (Sunspot Index and Long-term Solar Observations International Data Center \cite{sidc}) adopted a formula for a new Wolf number (Version 2.0). It is also known that the maximum Wolf number of a solar cycle is directly (inversely) proportional to the minimum Wolf number of the previous cycle (the duration of the previous cycle), significant at $1\%$ significance levels \cite{vasiljeva2021history}.
+From Wolff's work, records of sunspot observations from around 1740 onwards are considered to be quite reliable. In 2011 researchers started a project to reconstruct sunspot data from as far back as 1610, however these still have significant issues that cause worries about reliability @vasiljeva2021history. In 2015 the SILSO (Sunspot Index and Long-term Solar Observations International Data Center @sidc ) adopted a formula for a new Wolf number (Version 2.0). It is also known that the maximum Wolf number of a solar cycle is directly (inversely) proportional to the minimum Wolf number of the previous cycle (the duration of the previous cycle), significant at $1\%$ significance levels @vasiljeva2021history .
 
 ### Utility of Sunspot Monitoring and Forecasting
 
-The term 'sunspots' refers to areas on the Sun's surface with significantly stronger magnetic fields than others. Visually they manifest as areas visibly darker than the rest of the solar surface. Most often they have an inner, darker part called the '\textit{umbra}' surrounded by a lighter '\textit{penumbra}' region. They most commonly appear in pairs with magnetic fields with opposite polarities \cite{hoyt1979variations}. Though the extent of causality is often difficult to definitively state there are a number of reasons that the monitoring and forecasting of sunspots could have significant positive ramifications.
+The term 'sunspots' refers to areas on the Sun's surface with significantly stronger magnetic fields than others. Visually they manifest as areas visibly darker than the rest of the solar surface. Most often they have an inner, darker part called the '\textit{umbra}' surrounded by a lighter '\textit{penumbra}' region. They most commonly appear in pairs with magnetic fields with opposite polarities @hoyt1979variations. Though the extent of causality is often difficult to definitively state there are a number of reasons that the monitoring and forecasting of sunspots could have significant positive ramifications.
 
-Coronal Mass Ejections (CMEs) are large clouds of plasma and magnetic fields that, upon hitting the Earth, cause heavy fluctuations in the planet's magnetic fields \cite{energyparticles}. Solar flares are intense bursts of radiation that can affect the Earth's atmosphere. The occurrence of both of these phenomena are relatively strongly correlated with the prevalence of sunspots. Solar flares are known to disrupt communications and systems that rely on radio waves such as GPS. CMEs likewise are known to, through their effect on Earth's magnetic field, affect the efficacy and durability of satellite technology \cite{powergrid}. 
+Coronal Mass Ejections (CMEs) are large clouds of plasma and magnetic fields that, upon hitting the Earth, cause heavy fluctuations in the planet's magnetic fields @energyparticles. Solar flares are intense bursts of radiation that can affect the Earth's atmosphere. The occurrence of both of these phenomena are relatively strongly correlated with the prevalence of sunspots. Solar flares are known to disrupt communications and systems that rely on radio waves such as GPS. CMEs likewise are known to, through their effect on Earth's magnetic field, affect the efficacy and durability of satellite technology @powergrid. 
 
-The effects of both these solar events can have potentially significant effects on satellite, radio and many other technologies. As a dramatic example, the Carrington event of 1859 was a period of unusually high solar activity, mirrored by a high number of sunspots \cite{Carrington}. The event caused telegraph systems around the world go haywire and ade the aurora borealis visible in even some tropical areas (as opposed to being confined to polar regions like usual). If scientists can predict high periods of sunspot activity they can better take measures to preserve their satellite technology and mitigate the effects on an ever widening array of technologies used in the modern world.
+The effects of both these solar events can have potentially significant effects on satellite, radio and many other technologies. As a dramatic example, the Carrington event of 1859 was a period of unusually high solar activity, mirrored by a high number of sunspots @Carrington. The event caused telegraph systems around the world go haywire and ade the aurora borealis visible in even some tropical areas (as opposed to being confined to polar regions like usual). If scientists can predict high periods of sunspot activity they can better take measures to preserve their satellite technology and mitigate the effects on an ever widening array of technologies used in the modern world.
 
-Additionally, it is generally agreed that sunspot prevalence, through associated solar activity levels, plays a role in earth's climate \cite{climate}. A dramatic example is that of the Maunder minimum. The term refers to the period from 1645 to 1715 where sunspots were exceedingly rare. It also happened to coincide significantly with the 'Little Ice Age' experienced by the earth in the 17th C \cite{hoyt1979variations}. How exactly and to what extent the effect is causal is still a topic of debate, however. Research of late has suggested that the effect onclimate chanfe depends strongly on the time scale in question. The causal effects on climate seem to be very small on the 11-year solar period but increase in magnitude sharply as one takes into account much longer 'secular cycles' in sunspot activity (which have a period of 100 to more than 200 years) \cite{climate}. There seems to be no indication that the Earth is heading to a new Maunder minimum so understanding the long-term trend of solar activity could be crucial in planning and simulating the effects of impending climate change.
+Additionally, it is generally agreed that sunspot prevalence, through associated solar activity levels, plays a role in earth's climate @climate. A dramatic example is that of the Maunder minimum. The term refers to the period from 1645 to 1715 where sunspots were exceedingly rare. It also happened to coincide significantly with the 'Little Ice Age' experienced by the earth in the 17th C @hoyt1979variations. How exactly and to what extent the effect is causal is still a topic of debate, however. Research of late has suggested that the effect onclimate chanfe depends strongly on the time scale in question. The causal effects on climate seem to be very small on the 11-year solar period but increase in magnitude sharply as one takes into account much longer 'secular cycles' in sunspot activity (which have a period of 100 to more than 200 years) @climate. There seems to be no indication that the Earth is heading to a new Maunder minimum so understanding the long-term trend of solar activity could be crucial in planning and simulating the effects of impending climate change.
+
+## Equations
+
+### ARIMA Model
+
+The ARIMA model, or AutoRegressive Integrated Moving Average model, is defined by three parameters: $p, d$ , and $q$. It is used for analyzing and forecasting time series data, and is expressed as $\text{ARIMA}(p,d,q)$. The model components are @Chap3Slides:
+
+
+1. **Autoregressive (AR) component ($p$)**: This part predicts the current value of the time series using a linear combination of its previous values. The order $p$ indicates how many past values are used. The AR part of the model can be represented as:
+    
+   $$  AR(p): Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \cdots + \phi_p Y_{t-p} + \epsilon_t $$
+    
+    where $Y_t$ is the time series at time $t$ and $\phi_1, \phi_2, \ldots,$ are the lag parameters.
+
+1. **Moving Average (MA) component ($q$)**: This part models the error term as a linear combination of error terms at previous times. The order $q$ indicates the number of past values used. The MA part can be represented as:
+    
+$$ MA(q): Y_t = \epsilon_t + \psi_{1} \epsilon_{t-1} + \psi_{t-2} \epsilon_{t-2} + \cdots + \psi_{q} \epsilon_{t-q} $$
+   
+    where $Y_t$ is the time series at time $t$ and $\psi_1, \psi_2, \ldots,$ are the the parameters for the moving average and $\epsilon_t$ is a white noise error term.
+
+1. **Integrated (I) component ($d$)**: This represents the differencing of observations to make the time series stationary. The degree of differencing, $d$, is the number of times the data have had past values subtracted. The integrated part can be written as:
+
+    $$ I(d): Y_t = \Delta^{d} Y_t = Y_{t} - Y_{t-d} $$
+    
+
+    where $d$ denotes the $d$-th difference of the series $Y_t$.
+
+    
+
+
+### Autocorrelation Function (ACF)
+
+The Autocorrelation Function (ACF) measures the linear dependency between observations in a time series separated by $k$ time lags. For a time series $Y_t$, where $t$ represents the time, the ACF at lag $k$ is defined as @Chap5Slides:
+
+
+$$ ACF(k) = \frac{\sum_{t=k+1}^{T} (Y_t - \bar{Y})(Y_{t-k} - \bar{Y})}{\sum_{t=1}^{T} (Y_t - \bar{Y})^2} $$
+
+
+where $T$ is the total number of observations, $Y_t$ is the value of the time series at time $t$, $\bar{Y}$ is the mean of the time series, $k$ is the lag, and $ACF(k)$ is the autocorrelation function at lag $k$.
+
+
+The ACF value ranges from -1 to 1, where:
+
+    1. A value close to 1 indicates a strong positive linear relationship between the time series observations separated by $k$ lags.
+    1. A value close to -1 indicates a strong negative linear relationship. 
+    1. A value close to 0 suggests little to no linear relationship.
+
+
+\subsection*{Partial Autocorrelation Function (PACF)}
+
+The Partial Autocorrelation Function (PACF) measures the extent of the linear association between an observation in a time series and its lag, with the effects of the intervening lags removed. For a time series $Y_t$, the PACF at lag $k$ is defined after controlling for the values of the time series at all shorter lags. The PACF at lag $k$ can be formally represented as @Chap5Slides:
+
+
+$$ PACF(k) = \text{Corr}(Y_t - \hat{Y}_t, Y_{t-k} - \hat{Y}_{t-k}) $$
+
+
+where: $Y_t$ is the value of the time series at time $t$, $\hat{Y}_t$ is the predicted value of $Y_t$ based on all shorter lags than $k$, $\hat{Y}_{t-k}$ is the predicted value of $Y_{t-k}$ based on all shorter lags than $k$, $k$ is the lag number, and $PACF(k)$ is the partial autocorrelation at lag $k$.
+
+
+The PACF is crucial for identifying the appropriate number of autoregressive (AR) terms in an ARIMA model. A significant PACF at lag $k$ (outside the confidence bands in a PACF plot) suggests that an AR term of order $k$ may be useful in the model.
+
+The interpretation of PACF values is similar to that of the ACF:
+
+    1. A value close to 1 indicates a strong positive direct relationship.
+    1. A value close to -1 indicates a strong negative direct relationship.
+    1. A value close to 0 suggests no direct relationship.
+
 
