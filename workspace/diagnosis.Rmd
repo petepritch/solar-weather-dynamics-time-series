@@ -136,10 +136,9 @@ From the heavy tailed form of the Q-Q plot we can deduce that the assumption of 
 library(knitr)
 
 data <- data.frame(
-  Column_1 = c("Model", "(p,d,q)x(P,D,Q)", "AIC"),
-  Column_2 = c("Model 1", "ARIMA(3,0,0)x(2,1,0)_12", aic.1),
-  Column_3 = c("Model 2", "SARMA(3,0,2)x(1,1,1)", aic.2),
-  Column_4 = c("Model 3", "AR(2)", "Row_3_Col_3", aic.3)
+  Column_1 = c("**Model**", "Model 1", "Model 2", "Model 3"),
+  Column_2 = c("**(p,d,q)x(P,D,Q)**", "ARIMA(3,0,0)x(2,1,0)" , "SARMA(3,0,2)x(1,1,1)" , "AR(2)"),    
+  Column_3 = c("**AIC**", aic.1, aic.2, aic.3)
 )
 
 # Create table
