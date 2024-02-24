@@ -183,27 +183,27 @@ The sine and cosine terms give a Fourier basis for expressing the time series as
 ### Periodogram on unsmoothed data
 We use R to compute the periodogram on the unsmoothed raw data directly. 
 ```{r}
-unsmoothed_spectrum<-spectrum(df$spots, main = "Unsmoothed periodogram",
-  xlab="frequency (cycles per year")
+unsmoothed_spectrum<-spectrum(data$monthly.mean, main = "Unsmoothed periodogram",
+  xlab="frequency (cycles per month")
 unsmoothed_freq <- unsmoothed_spectrum$freq[which.max(unsmoothed_spectrum$spec)]
-unsmoothed_freq
-1/unsmoothed_freq
+cat("The frequency is ", unsmoothed_freq, "cycles per month.\n")
+cat("Or equivalently: ", (1/unsmoothed_freq)/12, "years per cycle.")
 ```
 
-We compute the dominant frequency, which is 0.0917 cycles per year, that is 10.909 years per cycle. This is close to our first observation. However, the unsmoothed periodogram doesn't provide us much visual clue on the data.
+We compute the dominant frequency, which is 0.0077 cycles per month, that is 10.81 years per cycle. This is close to our first observation. However, the unsmoothed periodogram doesn't provide us much visual clue on the data.
 
 ### Periodogram on smoothed data
-Now, we compute the periodogram on smoothed data. One way of smoothing the data is to use the default smoother provided by spec.pgram. This smooth the periodogram with modified Daniell smoothers [@R]. We set the window sizes to be 15 and 15, based on the previous analysis on the approximate cycle length of the data. (put more stuff)
+Now, we compute the periodogram on smoothed data. One way of smoothing the data is to use the default smoother provided by spec.pgram. This smooth the periodogram with modified Daniell smoothers [@R]. We set the window sizes to be 30 months and 30 months.
 
 
 ```{r}
-smoothed_spectrum <- spectrum(df$spots, spans=c(15, 15), main = "Smoothed periodogram", xlab="Frequency (per month)")
+smoothed_spectrum <- spectrum(data$monthly.mean, spans=c(30, 30), main = "Smoothed periodogram", xlab="Frequency (cycles per month)")
 freq <- smoothed_spectrum$freq[which.max(smoothed_spectrum$spec)]
-freq
-1/freq
+cat("The frequency is ", freq, "cycles per month.\n")
+cat("Or equivalently: ", (1/freq)/12, "years per cycle.")
 ```
 
-From the plot, we find the dominant frequency is 0.0917 cycles per year and equivalently 10.90 years per cycle.
+From the plot, we find the dominant frequency is 0.0074 cycles per months and equivalently 11.25 years per cycle.
 
 ### Estimating the spectral density function by fitting an autoregressive model
 
@@ -212,18 +212,17 @@ $$Y_n=\sum_{i=1}^p\varphi_i Y_{n-i}+\epsilon_n,$$
 where $Y_{1:n}$ are random variables representing the AR($p$) model, $\varphi_{1:p}$ are parameters of the model and $\epsilon_{1:n}$ is a white noise process of independent and identically distributed normal random variables [@Chap3Slides]. The order $p$ itself is also a parameter and is determined using Akaike Information Criterion (AIC) [@Chap5Slides]. We don't go into the details of AIC here and we refer the readers to [@Chap5Slides] for more details on AIC. We run the following code to fit an AR($p$) model, where the parameter $p$ is picked based on AIC by R.
 
 ```{r}
-ar_spectrum <- spectrum(df$spots, method = "ar",
+ar_spectrum <- spectrum(data$monthly.mean, method = "ar",
                          main = "Spectral Density by an AR Model, selected by AIC",
-                         xlab = "Frequency (cycles per year)")
+                         xlab = "Frequency (cycles per month)")
 ar_freq <- ar_spectrum$freq[which.max(ar_spectrum $spec)]
-ar_freq
-1/ar_freq
+cat("The frequency is ", ar_freq, "cycles per month.\n")
+cat("Or equivalently: ", (1/ar_freq)/12, "years per cycle.")
 ```
 
-We observe the AR($p$) model have a dominant frequency of 0.0841 cycles per year, or 11.88 years per cycle.
+We observe the AR($p$) model have a dominant frequency of 0.0080 cycles per month, or 10.39 years per cycle.
 
 All three models give a period of around 11 years, which confirm our observation and also coincide with our prior knowledge of sunspot cycles.
-
 --------
 
 # Model Selection
