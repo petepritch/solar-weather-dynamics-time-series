@@ -1,0 +1,54 @@
+---
+title: "Diagnostics"
+output: html_document
+date: "2024-02-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_packages, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(zoo)
+library(forecast)
+library(lmtest)
+library(astsa)
+library(cowplot)
+library(scales)
+library(tseries)
+library(tidyquant)
+library(tseries)
+```
+
+```{r model_3, echo=FALSE}
+n <- length(ss)
+cycle_length <- 12*11
+cycle <- cos(2 * pi * (1:n) / cycle_length)
+
+mod.3 <- arima(ss, order = c(2,0,0), xreg = cycle) # 11-cycle 
+```
+
+
+```{r, echo=FALSE}
+mod.1 <- arima(ss, order=c(3,0,0), seasonal=list(order=c(2,1,0), period=12)) # eyeballing
+mod.2 <- arima(ss, order=c(3,0,2), seasonal=list(order=c(1,1,1), period=12)) # grid search
+
+aic.1 <- mod.1$aic
+aic.2 <- mod.2$aic
+aic.3 <- mod.3$aic
+```
+
+
+--------
+
+## Diagnostics
+
+###Model 1
+```{r echo = False}
+#ar(mar = c(5,5,2,2))
+tsdiag(mod.1)
+
+```
