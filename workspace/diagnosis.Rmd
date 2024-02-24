@@ -130,6 +130,7 @@ jba3
 
 From the heavy tailed form of the Q-Q plot we can deduce that the assumption of normal residuals is violated in this case. This is also evidenced by a Jarque-Bera test that yielded a p-value of `jba3$p.value` indicating that we should reject the null hypothesis of normality. 
 
+###################################################################################################################################################################
 #Table
 
 ```{r}
