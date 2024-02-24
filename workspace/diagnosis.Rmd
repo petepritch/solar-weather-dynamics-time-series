@@ -46,6 +46,10 @@ aic.3 <- mod.3$aic
 
 ## Diagnostics
 
+We will now analyze our selected models by taking their residuals and testing whether they adhere to the assumptions of homoskedasticity, independence and normality. To do this we subject each of our three models to a visual judgement on the presence of heteroskedasticity (changing variability over time) and using a Breusch-Pagan test if there seems like there may be. We then look at the auto-correlation function (default `r acf` function in R) and Ljung-Box test to see if there is any dependence on previous errors, whether cumulative or otherwise. This gives us an idea of how reasonable our assumption that the residuals are independently distributed is. And finally we look at both a Q-Q plot and a Jarque-bera test to see if our assumption of normality is reasonable. 
+
+In the end we find that there is little justification to believe there is any systematic autocorrelation of the errors in any of our models except perhaps model 2 but even that is ambiguous meaning we are jsutified in assuming independent errors as well as omitting an MA(q) process from models 1 and 3. The normality assumption, however seemed to be violated in all three of our models.
+
 ###Model 1
 ```{r echo = False}
 #ar(mar = c(5,5,2,2))
@@ -80,7 +84,7 @@ tsdiag(mod.2)
 
 ```
 
-By eyeballing the plot of standardized we don't see much evidence for heteroskedasticity in model 2. However we seem to be getting somewhat conflicting evidence of autocorrelation of errors in the model. While the autocorrelation function shows nothing significant at any lags, the Ljung-Box test shows what appears to be significant collective autocorrelation for lags of size one to eight. It is possible that there are outliers that could have undue influence on the Ljung-Box statistic but the residuals do not show evidence of such a significant one. That leads us to believe that there is probably cumulative autocorrelation among multiple lags that is not immediately evident in the ACF regime.
+By eyeballing the plot of standardized residuals we don't see much evidence for heteroskedasticity in model 2. However we seem to be getting somewhat conflicting evidence of autocorrelation of errors in the model. While the autocorrelation function shows nothing significant at any lags, the Ljung-Box test shows what appears to be significant collective autocorrelation for lags of size one to eight. It is possible that there are outliers that could have undue influence on the Ljung-Box statistic but the residuals do not show evidence of such a significant one. That leads us to believe that there is probably cumulative autocorrelation among multiple lags that is not immediately evident in the ACF regime.
 
 ```{r echo = False}
 
