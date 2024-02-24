@@ -135,12 +135,12 @@ From the heavy tailed form of the Q-Q plot we can deduce that the assumption of 
 ```{r}
 library(knitr)
 
-data <- data.frame(
+table_data <- data.frame(
   Column_1 = c("**Model**", "Model 1", "Model 2", "Model 3"),
   Column_2 = c("**(p,d,q)x(P,D,Q)**", "ARIMA(3,0,0)x(2,1,0)" , "SARMA(3,0,2)x(1,1,1)" , "AR(2)"),    
   Column_3 = c("**AIC**", aic.1, aic.2, aic.3)
 )
 
 # Create table
-kable(data)
+kable(table_data)
 ```
