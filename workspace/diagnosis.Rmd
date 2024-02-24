@@ -52,3 +52,76 @@ aic.3 <- mod.3$aic
 tsdiag(mod.1)
 
 ```
+From the first graph we see that for model 1 there is little evidence of heteroskedasticity so the homoskedasticity assumption holds. Likewise, both the ACF and the Ljung-Box statistic indicate that there is no significant autocorrelation in the residuals so our assumptions of independence seem to be reasonable as well. This also bodes well for our decision to omit the MA(q) process from the model as previous residuals seem not to impact present ones.
+
+```{r echo = False}
+
+residuals1 <- residuals(mod.1)
+qqnorm(residuals1)
+qqline(residuals1)
+
+jba1<- jarque.bera.test(residuals1)
+
+
+```
+
+From the heavy tailed form of the Q-Q plot we can deduce that the assumption of normal residuals is violated in this case. This is also evidenced by a Jarque-Bera test that yielded a p-value of `jba1$p.value` indicating that we should reject the null hypothesis of normality. 
+
+
+
+
+----
+
+###Model 2
+```{r echo = False}
+par(mar = c(5, 5, 2, 2))
+
+tsdiag(mod.2)
+
+```
+
+By eyeballing the plot of standardized we don't see much evidence for heteroskedasticity in model 2. However we seem to be getting somewhat conflicting evidence of autocorrelation of errors in the model. While the autocorrelation function shows nothing significant at any lags, the Ljung-Box test shows what appears to be significant collective autocorrelation for lags of size one to eight. It is possible that there are outliers that could have undue influence on the Ljung-Box statistic but the residuals do not show evidence of such a significant one. That leads us to believe that there is probably cumulative autocorrelation among multiple lags that is not immediately evident in the ACF regime.
+
+```{r echo = False}
+
+residuals2 <- residuals(mod.2)
+
+
+qqnorm(residuals2)
+qqline(residuals2)
+
+jba2 <- jarque.bera.test(residuals2)
+
+
+
+```
+From the heavy tailed form of the Q-Q plot we can deduce that the assumption of normal residuals is violated in this case. This is also evidenced by a Jarque-Bera test that yielded a p-value of `jba2$p.value` indicating that we should reject the null hypothesis of normality. 
+
+
+
+
+
+----
+###Model 3
+```{r echo = False}
+
+
+tsdiag(mod.3)
+
+```
+From the first graph we see that for model 3there is little evidence of heteroskedasticity so the homoskedasticity assumption holds. Likewise, both the ACF and the Ljung-Box statistic indicate that there is no significant autocorrelation in the residuals so our assumptions of independence seem to be reasonable as well. This also bodes well for our decision to omit the MA(q) process from the model as previous residuals seem not to impact present ones.
+
+
+```{r echo = False}
+
+residuals3 <- residuals(mod.3)
+jba3 <- jarque.bera.test(residuals(mod.3))
+
+qqnorm(residuals3)
+qqline(residuals3)
+
+jba3
+
+```
+
+From the heavy tailed form of the Q-Q plot we can deduce that the assumption of normal residuals is violated in this case. This is also evidenced by a Jarque-Bera test that yielded a p-value of `jba3$p.value` indicating that we should reject the null hypothesis of normality. 
