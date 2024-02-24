@@ -10,9 +10,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r load_packages, echo=FALSE}
+```{r load_packages, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
 library(dplyr)
 library(ggplot2)
+library(knitr)
+library(zoo)
+library(forecast)
+library(lmtest)
+library(astsa)
+library(cowplot)
+library(scales)
+library(tseries)
+library(tidyquant)
 ```
 
 Let's first load the data.
